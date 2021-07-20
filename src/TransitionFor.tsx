@@ -43,18 +43,18 @@ export function TransitionFor<T>(props: {
 		options: { persistDuration, ...flipOptions } = DEFAULT_OPTIONS,
 		children: mapFn,
 	} = props;
-	const [getItems, setItems] = createSignal<Element[]>([]);
-	const getCurrentItems = createMemo(
+	const [getItems, setItems] = createSignal<[Element, Accessor<number>][]>([]);
+	const getCurrentItems = createMemo<[Element, Accessor<number>][]>(
 		mapArray(
 			() => props.each as T[],
-			mapFn.length === 2
-				? (item, getIndex) =>
-						resolve(mapFn(item, getIndex) as Resolvable) as Element
-				: (item) => resolve((mapFn as any)(item) as Resolvable) as Element
+			(item, getIndex) => [
+				resolve(mapFn(item, getIndex) as Resolvable) as Element,
+				getIndex,
+			]
 		)
 	);
 	createComputed(() => {
-		const deletedSet = new Set<Element>();
+		const deletedSet = new Set<[Element, Accessor<number>]>();
 		batch(() => {
 			const currentItems = getCurrentItems();
 			const nextItems = [...currentItems];
@@ -77,9 +77,10 @@ export function TransitionFor<T>(props: {
 	});
 	return (
 		<For each={getItems()} fallback={fallback}>
-			{(el, getIndex) => {
+			{([el, getCurrentIndex], getIndex) => {
 				createRenderEffect(() => {
-					const _ = getIndex();
+					getIndex();
+					getCurrentIndex();
 					const parent = el.parentElement;
 					if (parent) {
 						const [prevX, prevY] = getRelativePos(el, parent);
