@@ -1,5 +1,5 @@
 {
-  "name": "solid-flip",
+  "name": "@otonashixav/solid-flip",
   "version": "0.0.1",
   "description": "A lightweight FLIP library for solid-js",
   "main": "dist/index.js",
@@ -15,5 +15,21 @@
     "@babel/preset-typescript": "^7.14.5",
     "solid-js": "^1.0.3",
     "typescript": "^4.3.5"
-  }
+  },
+  "dependencies": {},
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/otonashixav/solid-flip.git"
+  },
+  "bugs": {
+    "url": "https://github.com/otonashixav/solid-flip/issues"
+  },
+  "homepage": "https://github.com/otonashixav/solid-flip#readme"
 }
