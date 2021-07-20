@@ -10,19 +10,19 @@ Usage is basically identical to using a `For` component. However, the map functi
 
 ```tsx
 <TransitionFor
-	each={reactiveList()}
-	fallback='Loading...'
-	options={{ duration: 300, persistDuration: 500 }}>
-	{(item, index) => {
-		let el!: HTMLSpanElement;
-		onMount(() => el.animate([{ opacity: 0 }, {}], { duration: 500 }));
-		onCleanup(() => el.animate([{}, { opacity: 0 }], { duration: 500 }));
-		return (
-			<span ref={el}>
-				{index()}: {item}
-			</span>
-		);
-	}}
+  each={reactiveList()}
+  fallback='Loading...'
+  options={{ duration: 300, persistDuration: 500 }}>
+  {(item, index) => {
+    let el!: HTMLSpanElement;
+    onMount(() => el.animate([{ opacity: 0 }, {}], { duration: 500 }));
+    onCleanup(() => el.animate([{}, { opacity: 0 }], { duration: 500 }));
+    return (
+      <span ref={el}>
+        {index()}: {item}
+      </span>
+    );
+  }}
 </TransitionFor>
 ```
 
@@ -30,31 +30,31 @@ The `options` prop allows you to specify the animation options for the FLIP anim
 
 ```tsx
 <TransitionFor
-	each={reactiveList()}
-	fallback='Loading...'
-	options={{ duration: 300, persistDuration: 500 }}>
-	{(item, index) => {
-		let el!: HTMLSpanElement, dispose!: () => void;
-		const [getDisposed, setDisposed] = createSignal(false);
-		createEffect(() => console.log(getDisposed())); // will log false only
-		onMount(() => el.animate([{ opacity: 0 }, {}], { duration: 500 }));
-		onCleanup(() => {
-			setDisposed(true);
-			el.animate([{}, { opacity: 0 }], { duration: 500 }).finished.then(
-				dispose
-			);
-		});
-		return createRoot((d) => {
-			dispose = d;
-			createEffect(() => {
-				console.log(getDisposed()); // will log false, then true
-			});
-			return (
-				<span ref={el}>
-					{index()}: {item} is disposed: {getDisposed()}
-				</span>
-			);
-		});
-	}}
+  each={reactiveList()}
+  fallback='Loading...'
+  options={{ duration: 300, persistDuration: 500 }}>
+  {(item, index) => {
+    let el!: HTMLSpanElement, dispose!: () => void;
+    const [getDisposed, setDisposed] = createSignal(false);
+    createEffect(() => console.log(getDisposed())); // will log false only
+    onMount(() => el.animate([{ opacity: 0 }, {}], { duration: 500 }));
+    onCleanup(() => {
+      setDisposed(true);
+      el.animate([{}, { opacity: 0 }], { duration: 500 }).finished.then(
+        dispose
+      );
+    });
+    return createRoot((d) => {
+      dispose = d;
+      createEffect(() => {
+        console.log(getDisposed()); // will log false, then true
+      });
+      return (
+        <span ref={el}>
+          {index()}: {item} is disposed: {getDisposed()}
+        </span>
+      );
+    });
+  }}
 </TransitionFor>
 ```

@@ -3,5 +3,15 @@
 	"useTabs": true,
 	"singleQuote": true,
 	"jsxSingleQuote": true,
-	"jsxBracketSameLine": true
+	"jsxBracketSameLine": true,
+	"overrides": [
+		{
+			"files": [
+				"*.md"
+			],
+			"options": {
+				"useTabs": false
+			}
+		}
+	]
 }
