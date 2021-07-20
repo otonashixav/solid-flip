@@ -51,7 +51,7 @@ The `options` prop allows you to specify the animation options for the FLIP anim
       });
       return (
         <span ref={el}>
-          {index()}: {item} is disposed: {getDisposed()}
+          {index()}: {item} {getDisposed() && 'Disposed'}
         </span>
       );
     });

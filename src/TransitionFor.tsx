@@ -32,7 +32,7 @@ function getRelativePos(el: Element, parent: Element): [x: number, y: number] {
 	return [elRect.x - parentRect.x, elRect.y - parentRect.y];
 }
 
-export default function TransitionFor<T>(props: {
+export function TransitionFor<T>(props: {
 	each: readonly T[] | null | undefined;
 	fallback?: JSX.Element;
 	options?: TransitionOptions;
