@@ -1,6 +1,6 @@
 {
   "name": "@otonashixav/solid-flip",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A lightweight FLIP library for solid-js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,18 +8,24 @@
     "flip",
     "solidjs"
   ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./dist/esm/index.js"
+    }
+  },
   "author": "Xavier Loh",
   "license": "WTFPL",
   "devDependencies": {
     "@babel/core": "^7.14.6",
     "@babel/preset-typescript": "^7.14.5",
+    "rollup": "^2.53.2",
+    "rollup-preset-solid": "^1.0.1",
     "solid-js": "^1.0.3",
     "typescript": "^4.3.5"
   },
-  "dependencies": {},
   "files": [
-    "dist",
-    "README.md"
+    "dist"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
