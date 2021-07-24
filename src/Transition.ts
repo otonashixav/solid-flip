@@ -63,10 +63,7 @@ export function defaultExit(
 		opacity: [null, 0],
 	}
 ): ExitFunction {
-	const options: KeyframeAnimationOptions = {
-		...DEFAULT_OPTIONS,
-		...animationOptions,
-	};
+	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
 	return (els, done) => {
 		const offsets: [undefined | number | null, undefined | number | null][] =
 			els.map((el: any) => [el.offsetLeft, el.offsetTop]);
@@ -110,9 +107,8 @@ export function Transition(props: {
 		exitingSet.forEach((el) => currSet.has(el) && exitingSet.delete(el));
 		const deleteEls = () =>
 			setEls((els) => els.filter((el) => !exitingSet.has(el)));
-		const exitingEls = [...exitingSet];
 
-		exitingEls.length && (exit ? exit(exitingEls, deleteEls) : deleteEls());
+		exitingSet.size && (exit ? exit([...exitingSet], deleteEls) : deleteEls());
 		enteringEls.length && enter && enter(enteringEls);
 
 		untrack(getEls).forEach(
