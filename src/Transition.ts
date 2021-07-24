@@ -130,7 +130,8 @@ export function Transition(props: {
 			});
 			requestAnimationFrame(() => {
 				let newLen = 0;
-				for (let i = movedEls.length; i--; i > 0) {
+				let i = movedEls.length;
+				while (i--) {
 					const movedEl = movedEls[i];
 					const [el, prevX, prevY] = movedEl;
 					const { x, y } = el.getBoundingClientRect();
