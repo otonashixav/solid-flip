@@ -128,21 +128,22 @@ export function Transition(props: {
 					movedEls.push([el, x, y]);
 				}
 			});
-			requestAnimationFrame(() => {
-				let newLen = 0;
-				let i = movedEls.length;
-				while (i--) {
-					const movedEl = movedEls[i];
-					const [el, prevX, prevY] = movedEl;
-					const { x, y } = el.getBoundingClientRect();
-					movedEl[1] = prevX - x;
-					movedEl[2] = prevY - y;
-					if (!(movedEl[1] || movedEl[2])) movedEls.splice(i, 1);
-					else newLen++;
-				}
-				movedEls.length = newLen;
-				move(movedEls);
-			});
+			movedEls.length &&
+				requestAnimationFrame(() => {
+					let newLen = 0;
+					let i = movedEls.length;
+					while (i--) {
+						const movedEl = movedEls[i];
+						const [el, prevX, prevY] = movedEl;
+						const { x, y } = el.getBoundingClientRect();
+						movedEl[1] = prevX - x;
+						movedEl[2] = prevY - y;
+						if (!(movedEl[1] || movedEl[2])) movedEls.splice(i, 1);
+						else newLen++;
+					}
+					movedEls.length = newLen;
+					newLen && move(movedEls);
+				});
 		});
 
 	return getEls;
