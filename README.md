@@ -4,7 +4,7 @@ A lightweight, highly performant transitions library for solid-js.
 
 ## Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=352295260&version=1.0.4)
+[Playground Link](https://playground.solidjs.com/?hash=1053702462&version=1.0.4)
 
 ```tsx
 // Basic Usage; most children that resolve to an Element are okay.
@@ -32,6 +32,10 @@ The `Transition` component provides all functionality for transitions. This incl
 It accepts three props, `move`, `enter` and `exit`, which take functions that handle the movement, entering, and exiting of props respectively. You can use the exported functions `defaultMove`, `defaultEnter`, and `defaultExit` to customize the default animations for these slightly, but any further changes (e.g. adding classes, triggering other events) must be implemented in custom animation handlers. Additionally, passing `false` for either prop will disable the respective animations.
 
 ## Changelog
+
+### 0.2.1
+
+- Fix types
 
 ### 0.2.0
 

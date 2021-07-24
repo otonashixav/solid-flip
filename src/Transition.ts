@@ -102,7 +102,7 @@ export function Transition(props: {
 		const resolved = getResolved();
 		const els = (Array.isArray(resolved) ? resolved : [resolved]).filter(
 			(el) => el instanceof Element
-		);
+		) as StylableElement[];
 		const currSet = new Set(els);
 
 		const enteringEls = els.filter((el) => !prevSet.has(el));
