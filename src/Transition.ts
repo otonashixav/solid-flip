@@ -102,14 +102,17 @@ export function Transition(props: {
 		) as StylableElement[];
 		const currSet = new Set(els);
 
-		const enteringEls = els.filter((el) => !prevSet.has(el));
+		if (enter) {
+			const enteringEls = els.filter((el) => !prevSet.has(el));
+			enteringEls.length && enter(enteringEls);
+		}
+
 		const exitingSet = prevSet;
 		exitingSet.forEach((el) => currSet.has(el) && exitingSet.delete(el));
 		const deleteEls = () =>
 			setEls((els) => els.filter((el) => !exitingSet.has(el)));
 
 		exitingSet.size && (exit ? exit([...exitingSet], deleteEls) : deleteEls());
-		enteringEls.length && enter && enter(enteringEls);
 
 		untrack(getEls).forEach(
 			(el, index) => currSet.has(el) || els.splice(index, 0, el)
