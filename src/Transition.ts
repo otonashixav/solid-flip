@@ -64,9 +64,9 @@ export function defaultLifecycle(
 
 export function Transition(props: {
 	children: JSX.Element;
-	move?: MoveFunction;
-	lifecycle?: LifecycleFunction;
-}) {
+	move?: MoveFunction | false;
+	lifecycle?: LifecycleFunction | false;
+}): JSX.Element {
 	const { move = defaultMove(), lifecycle = defaultLifecycle() } = props;
 	const getResolved = children(() => props.children);
 	const [getElements, setElements] = createSignal<StylableElement[]>([]);
@@ -79,26 +79,31 @@ export function Transition(props: {
 		).filter((el) => el instanceof Element);
 		const currSet = new Set(currElements);
 
-		const newElements = currElements.filter((el) => !prevSet.has(el));
-		newElements.forEach((el) => exitFunctions.set(el, lifecycle(el)));
+		if (lifecycle) {
+			const newElements = currElements.filter((el) => !prevSet.has(el));
+			newElements.forEach((el) => exitFunctions.set(el, lifecycle(el)));
 
-		let deleted = false;
-		prevSet.forEach((el) => {
-			// Modify prevSet in place to contain only items not found in currSet
-			if (currSet.has(el)) {
-				prevSet.delete(el);
-			} else {
-				// Delete items not found in currSet
-				const exit = exitFunctions.get(el);
-				exitFunctions.delete(el) &&
-					exit!(() => {
-						if (!deleted) {
-							deleted = true;
-							setElements((els) => els.filter((el) => !prevSet.has(el)));
-						}
-					});
-			}
-		});
+			let deleted = false;
+			prevSet.forEach((el) => {
+				// Modify prevSet in place to contain only items not found in currSet
+				if (currSet.has(el)) {
+					prevSet.delete(el);
+				} else {
+					// Delete items not found in currSet
+					const exit = exitFunctions.get(el);
+					exitFunctions.delete(el) &&
+						exit!(() => {
+							if (!deleted) {
+								deleted = true;
+								setElements((els) => els.filter((el) => !prevSet.has(el)));
+							}
+						});
+				}
+			});
+		} else {
+			prevSet.forEach((el) => currSet.has(el) && prevSet.delete(el));
+			setElements((els) => els.filter((el) => !prevSet.has(el)));
+		}
 
 		untrack(getElements).forEach((el, index) => {
 			if (!currSet.has(el)) currElements.splice(index, 0, el);
@@ -108,19 +113,20 @@ export function Transition(props: {
 		return currSet;
 	}, new Set());
 
-	createRenderEffect(() => {
-		getElements().forEach((el) => {
-			if (el.parentElement) {
-				const { x: prevX, y: prevY } = el.getBoundingClientRect();
-				requestAnimationFrame(() => {
-					const { x, y } = el.getBoundingClientRect();
-					const deltaX = prevX - x;
-					const deltaY = prevY - y;
-					if (deltaX || deltaY) move(el, deltaX, deltaY);
-				});
-			}
+	move &&
+		createRenderEffect(() => {
+			getElements().forEach((el) => {
+				if (el.parentElement) {
+					const { x: prevX, y: prevY } = el.getBoundingClientRect();
+					requestAnimationFrame(() => {
+						const { x, y } = el.getBoundingClientRect();
+						const deltaX = prevX - x;
+						const deltaY = prevY - y;
+						if (deltaX || deltaY) move(el, deltaX, deltaY);
+					});
+				}
+			});
 		});
-	});
 
 	return getElements;
 }
