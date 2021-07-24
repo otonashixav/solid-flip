@@ -1,1 +1,1 @@
-export * from './TransitionFor';
+export * from './Transition';
