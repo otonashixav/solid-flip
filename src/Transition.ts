@@ -44,9 +44,10 @@ export function defaultEnter(
 	animationOptions?: KeyframeAnimationOptions,
 	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
 		opacity: [0, null],
-	}
+	},
+	skipInitial = true
 ): EnterFunction {
-	let initial = true;
+	let initial = skipInitial;
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
 	return (els) =>
 		initial
