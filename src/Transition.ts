@@ -11,9 +11,14 @@ export interface StylableElement
 	extends Element,
 		ElementCSSInlineStyle,
 		HTMLOrSVGElement {}
-export type MoveFunction = (el: StylableElement, x: number, y: number) => void;
-export type LifecycleFunction = (el: StylableElement) => ExitFunction;
-type ExitFunction = (done: () => void) => void;
+export type MoveFunction = (
+	movedElements: [el: StylableElement, x: number, y: number][]
+) => void;
+export type EnterFunction = (enteringElements: StylableElement[]) => void;
+export type ExitFunction = (
+	exitingElements: StylableElement[],
+	done: () => void
+) => void;
 
 const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
 	duration: 300,
@@ -22,7 +27,7 @@ const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
 
 export function defaultMove(
 	animationOptions?: KeyframeAnimationOptions,
-	getMoveKeyframes: (
+	getKeyframes: (
 		x: number,
 		y: number
 	) => Keyframe[] | PropertyIndexedKeyframes | null = (x, y) => ({
@@ -31,102 +36,116 @@ export function defaultMove(
 	})
 ): MoveFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
-	return (el, x, y) => el.animate(getMoveKeyframes(x, y), options);
+	return (els) =>
+		els.forEach(([el, x, y]) => el.animate(getKeyframes(x, y), options));
 }
 
-export function defaultLifecycle(
+export function defaultEnter(
 	animationOptions?: KeyframeAnimationOptions,
-	enterKeyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
+	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
 		opacity: [0, null],
-	},
-	exitKeyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
+	}
+): EnterFunction {
+	let initial = true;
+	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
+	return (els) =>
+		initial
+			? (initial = false)
+			: requestAnimationFrame(() =>
+					els.forEach((el) => el.animate(keyframes, options))
+			  );
+}
+
+export function defaultExit(
+	animationOptions?: KeyframeAnimationOptions,
+	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
 		opacity: [null, 0],
 	}
-): LifecycleFunction {
-	let skipEnter = true;
-	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
-	return function (el: StylableElement) {
-		skipEnter
-			? setTimeout(() => (skipEnter = false))
-			: requestAnimationFrame(() => el.animate(enterKeyframes, options));
-		return (done) => {
-			const { offsetLeft, offsetTop } = el as any;
-			requestAnimationFrame(async () => {
-				el.style.setProperty('position', 'absolute');
-				offsetLeft && el.style.setProperty('left', `${offsetLeft}px`);
-				offsetTop && el.style.setProperty('top', `${offsetTop}px`);
-				await el.animate(exitKeyframes, options).finished;
-				done();
-			});
-		};
+): ExitFunction {
+	const options: KeyframeAnimationOptions = {
+		...DEFAULT_OPTIONS,
+		...animationOptions,
+	};
+	return (els, done) => {
+		const offsets: [undefined | number | null, undefined | number | null][] =
+			els.map((el: any) => [el.offsetLeft, el.offsetTop]);
+		requestAnimationFrame(() =>
+			Promise.all(
+				els.map((el, index) => {
+					const [left, top] = offsets[index];
+					el.style.setProperty('position', 'absolute');
+					left && el.style.setProperty('left', `${left}px`);
+					top && el.style.setProperty('top', `${top}px`);
+					return el.animate(keyframes, options).finished;
+				})
+			).then(done)
+		);
 	};
 }
 
 export function Transition(props: {
 	children: JSX.Element;
 	move?: MoveFunction | false;
-	lifecycle?: LifecycleFunction | false;
+	enter?: EnterFunction | false;
+	exit?: ExitFunction | false;
 }): JSX.Element {
-	const { move = defaultMove(), lifecycle = defaultLifecycle() } = props;
+	const {
+		move = defaultMove(),
+		enter = defaultEnter(),
+		exit = defaultExit(),
+	} = props;
 	const getResolved = children(() => props.children);
-	const [getElements, setElements] = createSignal<StylableElement[]>([]);
-	const exitFunctions = new Map<StylableElement, ExitFunction>();
+	const [getEls, setEls] = createSignal<StylableElement[]>([]);
 
 	createComputed((prevSet: Set<StylableElement>) => {
 		const resolved = getResolved();
-		const currElements = (
-			Array.isArray(resolved) ? resolved : [resolved]
-		).filter((el) => el instanceof Element);
-		const currSet = new Set(currElements);
+		const els = (Array.isArray(resolved) ? resolved : [resolved]).filter(
+			(el) => el instanceof Element
+		);
+		const currSet = new Set(els);
 
-		if (lifecycle) {
-			const newElements = currElements.filter((el) => !prevSet.has(el));
-			newElements.forEach((el) => exitFunctions.set(el, lifecycle(el)));
+		const enteringEls = els.filter((el) => !prevSet.has(el));
+		const exitingSet = prevSet;
+		exitingSet.forEach((el) => currSet.has(el) && exitingSet.delete(el));
+		const deleteEls = () =>
+			setEls((els) => els.filter((el) => !exitingSet.has(el)));
+		const exitingEls = [...exitingSet];
 
-			let deleted = false;
-			prevSet.forEach((el) => {
-				// Modify prevSet in place to contain only items not found in currSet
-				if (currSet.has(el)) {
-					prevSet.delete(el);
-				} else {
-					// Delete items not found in currSet
-					const exit = exitFunctions.get(el);
-					exitFunctions.delete(el) &&
-						exit!(() => {
-							if (!deleted) {
-								deleted = true;
-								setElements((els) => els.filter((el) => !prevSet.has(el)));
-							}
-						});
-				}
-			});
-		} else {
-			prevSet.forEach((el) => currSet.has(el) && prevSet.delete(el));
-			setElements((els) => els.filter((el) => !prevSet.has(el)));
-		}
+		exitingEls.length && (exit ? exit(exitingEls, deleteEls) : deleteEls());
+		enteringEls.length && enter && enter(enteringEls);
 
-		untrack(getElements).forEach((el, index) => {
-			if (!currSet.has(el)) currElements.splice(index, 0, el);
-		});
-		setElements(currElements);
+		untrack(getEls).forEach(
+			(el, index) => currSet.has(el) || els.splice(index, 0, el)
+		);
+		setEls(els);
 
 		return currSet;
 	}, new Set());
 
 	move &&
 		createRenderEffect(() => {
-			getElements().forEach((el) => {
-				if (el.parentElement) {
-					const { x: prevX, y: prevY } = el.getBoundingClientRect();
-					requestAnimationFrame(() => {
-						const { x, y } = el.getBoundingClientRect();
-						const deltaX = prevX - x;
-						const deltaY = prevY - y;
-						if (deltaX || deltaY) move(el, deltaX, deltaY);
-					});
+			const movedEls: [StylableElement, number, number][] = [];
+			getEls().forEach((el) => {
+				if (el.parentNode) {
+					const { x, y } = el.getBoundingClientRect();
+					movedEls.push([el, x, y]);
 				}
+			});
+			requestAnimationFrame(() => {
+				let newLen = 0;
+				for (let i = movedEls.length; i--; i > 0) {
+					const movedEl = movedEls[i];
+					const [el, prevX, prevY] = movedEl;
+					const { x, y } = el.getBoundingClientRect();
+					movedEl[1] = prevX - x;
+					movedEl[2] = prevY - y;
+					if (!(movedEl[1] || movedEl[2])) movedEls.splice(i, 1);
+					else newLen++;
+				}
+				movedEls.length = newLen;
+				move(movedEls);
 			});
 		});
 
-	return getElements;
+	return getEls;
 }
