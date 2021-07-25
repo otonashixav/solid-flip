@@ -33,6 +33,10 @@ It accepts three props, `move`, `enter` and `exit`, which take functions that ha
 
 ## Changelog
 
+### 0.2.4
+
+- Fixes the sizing of elements with percentage heights and/or margins after `defaultExit`
+
 ### 0.2.3
 
 - More optimizations, fix invalid keyframe values
