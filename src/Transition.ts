@@ -43,7 +43,7 @@ export function defaultMove(
 export function defaultEnter(
 	animationOptions?: KeyframeAnimationOptions,
 	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
-		opacity: [0, null],
+		opacity: ['0', ''],
 	},
 	skipInitial = true
 ): EnterFunction {
@@ -60,7 +60,7 @@ export function defaultEnter(
 export function defaultExit(
 	animationOptions?: KeyframeAnimationOptions,
 	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
-		opacity: [null, 0],
+		opacity: ['', '0'],
 	}
 ): ExitFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
