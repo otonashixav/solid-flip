@@ -65,15 +65,26 @@ export function defaultExit(
 ): ExitFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
 	return (els, done) => {
-		const offsets: [undefined | number | null, undefined | number | null][] =
-			els.map((el: any) => [el.offsetLeft, el.offsetTop]);
+		const propertiesList: (Record<string, number> | null)[] = els.map(
+			(el: Element) => {
+				if (!(el instanceof HTMLElement)) return null;
+				return {
+					left: el.offsetLeft,
+					top: el.offsetTop,
+					width: el.offsetWidth,
+					height: el.offsetHeight,
+					margin: 0,
+				};
+			}
+		);
 		requestAnimationFrame(() =>
 			Promise.all(
 				els.map((el, index) => {
-					const [left, top] = offsets[index];
 					el.style.setProperty('position', 'absolute');
-					left && el.style.setProperty('left', `${left}px`);
-					top && el.style.setProperty('top', `${top}px`);
+					const properties = propertiesList[index];
+					for (const property in properties) {
+						el.style.setProperty(property, `${properties[property]}px`);
+					}
 					return el.animate(keyframes, options).finished;
 				})
 			).then(done)
