@@ -42,9 +42,12 @@ export function defaultMove(
 
 export function defaultEnter(
 	animationOptions?: KeyframeAnimationOptions,
-	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
-		opacity: ['0', ''],
-	},
+	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = [
+		{
+			opacity: 0,
+		},
+		{},
+	],
 	skipInitial = true
 ): EnterFunction {
 	let initial = skipInitial;
@@ -59,9 +62,12 @@ export function defaultEnter(
 
 export function defaultExit(
 	animationOptions?: KeyframeAnimationOptions,
-	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
-		opacity: ['', '0'],
-	}
+	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = [
+		{},
+		{
+			opacity: 0,
+		},
+	]
 ): ExitFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
 	return (els, done) => {
