@@ -33,6 +33,10 @@ It accepts three props, `move`, `enter` and `exit`, which take functions that ha
 
 ## Changelog
 
+### 0.2.6
+
+- Slight optimizations and preparations for further improvements
+
 ### 0.2.5
 
 - Fix invalid keyframe values again
