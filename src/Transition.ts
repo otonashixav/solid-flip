@@ -64,7 +64,7 @@ export function defaultExit(
 	}
 ): ExitFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
-	return (els, done) => {
+	return (els, done) =>
 		Promise.all(
 			els.reverse().map((el) => {
 				const properties =
@@ -85,7 +85,6 @@ export function defaultExit(
 				return el.animate(keyframes, options).finished;
 			})
 		).then(done);
-	};
 }
 
 function moveEls(els: StylableElement[], moveFunction?: MoveFunction | false) {
