@@ -31,7 +31,7 @@ export function defaultMove(
 		x: number,
 		y: number
 	) => Keyframe[] | PropertyIndexedKeyframes | null = (x, y) => ({
-		transform: [`translate(${x}px,${y}px)`, ''],
+		transform: [`translate(${x}px,${y}px)`, 'inherit'],
 		composite: 'add',
 	})
 ): MoveFunction {
@@ -42,12 +42,9 @@ export function defaultMove(
 
 export function defaultEnter(
 	animationOptions?: KeyframeAnimationOptions,
-	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = [
-		{
-			opacity: 0,
-		},
-		{},
-	],
+	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
+		opacity: ['0', 'inherit'],
+	},
 	skipInitial = true
 ): EnterFunction {
 	let initial = skipInitial;
@@ -62,12 +59,9 @@ export function defaultEnter(
 
 export function defaultExit(
 	animationOptions?: KeyframeAnimationOptions,
-	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = [
-		{},
-		{
-			opacity: 0,
-		},
-	]
+	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
+		opacity: ['inherit', '0'],
+	}
 ): ExitFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
 	return (els, done) => {
