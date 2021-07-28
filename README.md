@@ -33,6 +33,10 @@ It accepts three props, `move`, `enter` and `exit`, which take functions that ha
 
 ## Changelog
 
+### 0.2.7
+
+- Further optimizations, fixed an issue introduced in 0.2.6 that caused exiting elements to be incorrectly sized on exit
+
 ### 0.2.6
 
 - Slight optimizations and preparations for further improvements
