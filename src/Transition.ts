@@ -156,9 +156,9 @@ export function Transition(props: {
 		};
 
 		moveEls(els, move);
-		enter && enteringEls.length && enter(enteringEls);
 		exitingSet.size && (exit ? exit([...exitingSet], deleteEls) : deleteEls());
 		setEls(els);
+		enter && enteringEls.length && enter(enteringEls);
 
 		return currSet;
 	}, new Set());
