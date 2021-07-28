@@ -70,29 +70,28 @@ export function defaultExit(
 	]
 ): ExitFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
-	return (els, done) =>
-		requestAnimationFrame(() =>
-			Promise.all(
-				els.reverse().map((el) => {
-					const properties =
-						el instanceof HTMLElement
-							? {
-									left: el.offsetLeft,
-									top: el.offsetTop,
-									width: el.offsetWidth,
-									height: el.offsetHeight,
-							  }
-							: undefined;
-					el.style.setProperty('position', 'absolute');
-					el.style.setProperty('margin', '0px');
-					for (const name in properties) {
-						const property = properties[name as keyof typeof properties];
-						el.style.setProperty(name, `${property}px`);
-					}
-					return el.animate(keyframes, options).finished;
-				})
-			).then(done)
-		);
+	return (els, done) => {
+		Promise.all(
+			els.reverse().map((el) => {
+				const properties =
+					el instanceof HTMLElement
+						? {
+								left: el.offsetLeft,
+								top: el.offsetTop,
+								width: el.offsetWidth,
+								height: el.offsetHeight,
+						  }
+						: undefined;
+				el.style.setProperty('position', 'absolute');
+				el.style.setProperty('margin', '0px');
+				for (const name in properties) {
+					const property = properties[name as keyof typeof properties];
+					el.style.setProperty(name, `${property}px`);
+				}
+				return el.animate(keyframes, options).finished;
+			})
+		).then(done);
+	};
 }
 
 function moveEls(els: StylableElement[], moveFunction?: MoveFunction | false) {
@@ -139,25 +138,27 @@ export function Transition(props: {
 			(el) => el instanceof Element
 		) as StylableElement[];
 		const currSet = new Set(els);
-
-		if (enter) {
-			const enteringEls = els.filter((el) => !prevSet.has(el));
-			enteringEls.length && enter(enteringEls);
-		}
-
+		const enteringEls = (enter &&
+			els.filter((el) => !prevSet.has(el))) as StylableElement[];
 		const exitingSet = prevSet;
-		exitingSet.forEach((el) => currSet.has(el) && exitingSet.delete(el));
-		const deleteEls = () => {
-			const nextEls = setEls((els) => els.filter((el) => !exitingSet.has(el)));
-			moveEls(nextEls, move);
-		};
-		exitingSet.size && (exit ? exit([...exitingSet], deleteEls) : deleteEls());
 
+		exitingSet.forEach((el) => currSet.has(el) && exitingSet.delete(el));
 		untrack(getEls).forEach(
 			(el, index) => currSet.has(el) || els.splice(index, 0, el)
 		);
-		setEls(els);
+
+		const deleteEls = () => {
+			setEls((els) => {
+				const nextEls = els.filter((el) => !exitingSet.has(el));
+				moveEls(nextEls, move);
+				return nextEls;
+			});
+		};
+
 		moveEls(els, move);
+		enter && enteringEls.length && enter(enteringEls);
+		exitingSet.size && (exit ? exit([...exitingSet], deleteEls) : deleteEls());
+		setEls(els);
 
 		return currSet;
 	}, new Set());
