@@ -1,18 +1,18 @@
-import {
-	children,
-	createComputed,
-	createRenderEffect,
-	createSignal,
-	untrack,
-	JSX,
-} from 'solid-js';
+import { children, createComputed, createSignal, untrack, JSX } from 'solid-js';
 
-export interface StylableElement
-	extends Element,
-		ElementCSSInlineStyle,
-		HTMLOrSVGElement {}
+type OneOrOther<U, V> = {
+	[K in keyof U]?: U[K];
+} &
+	{
+		[K in keyof V]?: V[K];
+	} &
+	{
+		[K in keyof (U | V)]: U[K] | V[K];
+	};
+
+export type StylableElement = OneOrOther<HTMLElement, SVGElement>;
 export type MoveFunction = (
-	movedElements: [el: StylableElement, x: number, y: number][]
+	allElements: [el: StylableElement, x: number, y: number][]
 ) => void;
 export type EnterFunction = (enteringElements: StylableElement[]) => void;
 export type ExitFunction = (
@@ -36,8 +36,8 @@ export function defaultMove(
 	})
 ): MoveFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
-	return (els) =>
-		els.forEach(([el, x, y]) => el.animate(getKeyframes(x, y), options));
+	return (movedEls) =>
+		movedEls.forEach(([el, x, y]) => el.animate(getKeyframes(x, y), options));
 }
 
 export function defaultEnter(
@@ -70,32 +70,53 @@ export function defaultExit(
 	]
 ): ExitFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
-	return (els, done) => {
-		const propertiesList: (Record<string, number> | null)[] = els.map(
-			(el: Element) => {
-				if (!(el instanceof HTMLElement)) return null;
-				return {
-					left: el.offsetLeft,
-					top: el.offsetTop,
-					width: el.offsetWidth,
-					height: el.offsetHeight,
-					margin: 0,
-				};
-			}
-		);
+	return (els, done) =>
 		requestAnimationFrame(() =>
 			Promise.all(
-				els.map((el, index) => {
+				els.reverse().map((el) => {
+					const properties =
+						el instanceof HTMLElement
+							? {
+									left: el.offsetLeft,
+									top: el.offsetTop,
+									width: el.offsetWidth,
+									height: el.offsetHeight,
+							  }
+							: undefined;
 					el.style.setProperty('position', 'absolute');
-					const properties = propertiesList[index];
-					for (const property in properties) {
-						el.style.setProperty(property, `${properties[property]}px`);
+					el.style.setProperty('margin', '0px');
+					for (const name in properties) {
+						const property = properties[name as keyof typeof properties];
+						el.style.setProperty(name, `${property}px`);
 					}
 					return el.animate(keyframes, options).finished;
 				})
 			).then(done)
 		);
-	};
+}
+
+function moveEls(els: StylableElement[], moveFunction?: MoveFunction | false) {
+	if (!moveFunction || !els.length) return;
+	const movedEls: [StylableElement, number, number][] = [];
+	els.forEach((el) => {
+		if (el.parentNode) {
+			const { x, y } = el.getBoundingClientRect();
+			movedEls.push([el, x, y]);
+		}
+	});
+	movedEls.length &&
+		requestAnimationFrame(() => {
+			let i = movedEls.length;
+			while (i--) {
+				const movedEl = movedEls[i];
+				const [el, prevX, prevY] = movedEl;
+				const { x, y } = el.getBoundingClientRect();
+				movedEl[1] = prevX - x;
+				movedEl[2] = prevY - y;
+				if (!(movedEl[1] || movedEl[2])) movedEls.splice(i, 1);
+			}
+			movedEls.length && moveFunction(movedEls);
+		});
 }
 
 export function Transition(props: {
@@ -104,7 +125,7 @@ export function Transition(props: {
 	enter?: EnterFunction | false;
 	exit?: ExitFunction | false;
 }): JSX.Element {
-	const {
+	let {
 		move = defaultMove(),
 		enter = defaultEnter(),
 		exit = defaultExit(),
@@ -126,45 +147,20 @@ export function Transition(props: {
 
 		const exitingSet = prevSet;
 		exitingSet.forEach((el) => currSet.has(el) && exitingSet.delete(el));
-		const deleteEls = () =>
-			setEls((els) => els.filter((el) => !exitingSet.has(el)));
-
+		const deleteEls = () => {
+			const nextEls = setEls((els) => els.filter((el) => !exitingSet.has(el)));
+			moveEls(nextEls, move);
+		};
 		exitingSet.size && (exit ? exit([...exitingSet], deleteEls) : deleteEls());
 
 		untrack(getEls).forEach(
 			(el, index) => currSet.has(el) || els.splice(index, 0, el)
 		);
 		setEls(els);
+		moveEls(els, move);
 
 		return currSet;
 	}, new Set());
-
-	move &&
-		createRenderEffect(() => {
-			const movedEls: [StylableElement, number, number][] = [];
-			getEls().forEach((el) => {
-				if (el.parentNode) {
-					const { x, y } = el.getBoundingClientRect();
-					movedEls.push([el, x, y]);
-				}
-			});
-			movedEls.length &&
-				requestAnimationFrame(() => {
-					let newLen = 0;
-					let i = movedEls.length;
-					while (i--) {
-						const movedEl = movedEls[i];
-						const [el, prevX, prevY] = movedEl;
-						const { x, y } = el.getBoundingClientRect();
-						movedEl[1] = prevX - x;
-						movedEl[2] = prevY - y;
-						if (!(movedEl[1] || movedEl[2])) movedEls.splice(i, 1);
-						else newLen++;
-					}
-					movedEls.length = newLen;
-					newLen && move(movedEls);
-				});
-		});
 
 	return getEls;
 }
