@@ -66,8 +66,9 @@ export function defaultExit(
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
 	return (els, done) =>
 		Promise.all(
-			els.reverse().map((el) => {
-				const properties =
+			els
+				.map<[StylableElement, Record<string, number> | undefined]>((el) => [
+					el,
 					el instanceof HTMLElement
 						? {
 								left: el.offsetLeft,
@@ -75,15 +76,15 @@ export function defaultExit(
 								width: el.offsetWidth,
 								height: el.offsetHeight,
 						  }
-						: undefined;
-				el.style.setProperty('position', 'absolute');
-				el.style.setProperty('margin', '0px');
-				for (const name in properties) {
-					const property = properties[name as keyof typeof properties];
-					el.style.setProperty(name, `${property}px`);
-				}
-				return el.animate(keyframes, options).finished;
-			})
+						: undefined,
+				])
+				.map(([el, offsets]) => {
+					el.style.setProperty('position', 'absolute');
+					el.style.setProperty('margin', '0px');
+					for (const name in offsets)
+						el.style.setProperty(name, `${offsets[name]}px`);
+					return el.animate(keyframes, options).finished;
+				})
 		).then(done);
 }
 
