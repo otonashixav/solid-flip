@@ -53,11 +53,10 @@ export function defaultEnter(
 	},
 	skipInitial = true
 ): EnterFunction {
-	let initial = skipInitial;
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
 	return (els) =>
-		initial
-			? (initial = false)
+		skipInitial
+			? (skipInitial = false)
 			: requestAnimationFrame(() =>
 					els.forEach((el) => el.animate(keyframes, options))
 			  );
@@ -88,8 +87,8 @@ export function defaultExit(
 				el.style.setProperty('margin', '0px');
 				for (const name in offsets)
 					el.style.setProperty(name, `${offsets[name]}px`);
-				const firstExited = el.animate(keyframes, options).finished;
-				firstExited.then(done);
+				const finished = el.animate(keyframes, options).finished;
+				!i && finished.then(done);
 			});
 }
 
@@ -99,19 +98,18 @@ function moveEls(els: StylableElement[], moveFunction?: MoveFunction | false) {
 		const { x, y } = el.getBoundingClientRect();
 		return [el, x, y] as [StylableElement, number, number];
 	});
-	movedEls.length &&
-		requestAnimationFrame(() => {
-			let i = movedEls.length;
-			while (i--) {
-				const movedEl = movedEls[i];
-				const [el, prevX, prevY] = movedEl;
-				const { x, y } = el.getBoundingClientRect();
-				movedEl[1] = prevX - x;
-				movedEl[2] = prevY - y;
-				if (!(movedEl[1] || movedEl[2])) movedEls.splice(i, 1);
-			}
-			movedEls.length && moveFunction(movedEls);
-		});
+	requestAnimationFrame(() => {
+		let i = movedEls.length;
+		while (i--) {
+			const movedEl = movedEls[i];
+			const [el, prevX, prevY] = movedEl;
+			const { x, y } = el.getBoundingClientRect();
+			movedEl[1] = prevX - x;
+			movedEl[2] = prevY - y;
+			if (!(movedEl[1] || movedEl[2])) movedEls.splice(i, 1);
+		}
+		movedEls.length && moveFunction(movedEls);
+	});
 }
 
 export function Transition(props: {
