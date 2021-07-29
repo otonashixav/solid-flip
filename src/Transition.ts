@@ -70,26 +70,28 @@ export function defaultExit(
 ): ExitFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
 	return (els, done) =>
-		els
-			.map<[StylableElement, Record<string, number> | undefined]>((el) => [
-				el,
-				el instanceof HTMLElement
-					? {
-							left: el.offsetLeft,
-							top: el.offsetTop,
-							width: el.offsetWidth,
-							height: el.offsetHeight,
-					  }
-					: undefined,
-			])
-			.forEach(([el, offsets], i) => {
-				el.style.setProperty('position', 'absolute');
-				el.style.setProperty('margin', '0px');
-				for (const name in offsets)
-					el.style.setProperty(name, `${offsets[name]}px`);
-				const finished = el.animate(keyframes, options).finished;
-				!i && finished.then(done);
-			});
+		requestAnimationFrame(() =>
+			els
+				.map<[StylableElement, Record<string, number> | undefined]>((el) => [
+					el,
+					el instanceof HTMLElement
+						? {
+								left: el.offsetLeft,
+								top: el.offsetTop,
+								width: el.offsetWidth,
+								height: el.offsetHeight,
+						  }
+						: undefined,
+				])
+				.forEach(([el, offsets], i) => {
+					el.style.setProperty('position', 'absolute');
+					el.style.setProperty('margin', '0px');
+					for (const name in offsets)
+						el.style.setProperty(name, `${offsets[name]}px`);
+					const finished = el.animate(keyframes, options).finished;
+					!i && finished.then(done);
+				})
+		);
 }
 
 function moveEls(els: StylableElement[], moveFunction?: MoveFunction | false) {
@@ -134,8 +136,6 @@ export function Transition(props: {
 		const currSet = new Set(els);
 		const prevEls = untrack(getEls);
 
-		moveEls(exit ? prevEls : els, move);
-
 		if (enter) {
 			const enteringEls = els.filter((el) => !prevSet.has(el));
 			enteringEls.length && enter(enteringEls);
@@ -159,6 +159,8 @@ export function Transition(props: {
 				exit([...exitingSet], deleteEls);
 			}
 		}
+
+		moveEls(prevEls, move);
 
 		setEls(els);
 
