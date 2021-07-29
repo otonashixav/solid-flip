@@ -33,6 +33,10 @@ It accepts three props, `move`, `enter` and `exit`, which take functions that ha
 
 ## Changelog
 
+### 0.2.10
+
+- Fix calling done multiple times in the default exit handler
+
 ### 0.2.9
 
 - More optimizations
