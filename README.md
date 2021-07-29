@@ -33,6 +33,10 @@ It accepts three props, `move`, `enter` and `exit`, which take functions that ha
 
 ## Changelog
 
+### 0.2.11
+
+- Restore previous operation order to prevent items from sometimes jumping (will need to batch requestAnimationFrame to fix)
+
 ### 0.2.10
 
 - Fix calling done multiple times in the default exit handler
