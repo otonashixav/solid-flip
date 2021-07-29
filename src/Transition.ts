@@ -120,7 +120,7 @@ export function Transition(props: {
 	enter?: EnterFunction | false;
 	exit?: ExitFunction | false;
 }): JSX.Element {
-	let {
+	const {
 		move = defaultMove(),
 		enter = defaultEnter(),
 		exit = defaultExit(),
