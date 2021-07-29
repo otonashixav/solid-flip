@@ -33,6 +33,10 @@ It accepts three props, `move`, `enter` and `exit`, which take functions that ha
 
 ## Changelog
 
+### 0.2.9
+
+- More optimizations
+
 ### 0.2.8
 
 - Fix invalid keyframes in firefox
