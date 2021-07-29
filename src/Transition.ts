@@ -134,7 +134,7 @@ export function Transition(props: {
 		const currSet = new Set(els);
 		const prevEls = untrack(getEls);
 
-		moveEls(prevEls, move);
+		moveEls(exit ? prevEls : els, move);
 
 		if (enter) {
 			const enteringEls = els.filter((el) => !prevSet.has(el));
