@@ -1,4 +1,10 @@
-import { children, createComputed, createSignal, untrack, JSX } from 'solid-js';
+import {
+	children,
+	createSignal,
+	untrack,
+	JSX,
+	createRenderEffect,
+} from 'solid-js';
 
 type OneOrOther<U, V> = {
 	[K in keyof U]?: U[K];
@@ -12,7 +18,7 @@ type OneOrOther<U, V> = {
 
 export type StylableElement = OneOrOther<HTMLElement, SVGElement>;
 export type MoveFunction = (
-	allElements: [el: StylableElement, x: number, y: number][]
+	movedElements: [el: StylableElement, x: number, y: number][]
 ) => void;
 export type EnterFunction = (enteringElements: StylableElement[]) => void;
 export type ExitFunction = (
@@ -31,7 +37,7 @@ export function defaultMove(
 		x: number,
 		y: number
 	) => Keyframe[] | PropertyIndexedKeyframes | null = (x, y) => ({
-		transform: [`translate(${x}px,${y}px)`, 'inherit'],
+		transform: [`translate(${x}px,${y}px)`, 'none'],
 		composite: 'add',
 	})
 ): MoveFunction {
@@ -65,37 +71,33 @@ export function defaultExit(
 ): ExitFunction {
 	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
 	return (els, done) =>
-		Promise.all(
-			els
-				.map<[StylableElement, Record<string, number> | undefined]>((el) => [
-					el,
-					el instanceof HTMLElement
-						? {
-								left: el.offsetLeft,
-								top: el.offsetTop,
-								width: el.offsetWidth,
-								height: el.offsetHeight,
-						  }
-						: undefined,
-				])
-				.map(([el, offsets]) => {
-					el.style.setProperty('position', 'absolute');
-					el.style.setProperty('margin', '0px');
-					for (const name in offsets)
-						el.style.setProperty(name, `${offsets[name]}px`);
-					return el.animate(keyframes, options).finished;
-				})
-		).then(done);
+		els
+			.map<[StylableElement, Record<string, number> | undefined]>((el) => [
+				el,
+				el instanceof HTMLElement
+					? {
+							left: el.offsetLeft,
+							top: el.offsetTop,
+							width: el.offsetWidth,
+							height: el.offsetHeight,
+					  }
+					: undefined,
+			])
+			.forEach(([el, offsets], i) => {
+				el.style.setProperty('position', 'absolute');
+				el.style.setProperty('margin', '0px');
+				for (const name in offsets)
+					el.style.setProperty(name, `${offsets[name]}px`);
+				const firstExited = el.animate(keyframes, options).finished;
+				firstExited.then(done);
+			});
 }
 
 function moveEls(els: StylableElement[], moveFunction?: MoveFunction | false) {
 	if (!moveFunction || !els.length) return;
-	const movedEls: [StylableElement, number, number][] = [];
-	els.forEach((el) => {
-		if (el.parentNode) {
-			const { x, y } = el.getBoundingClientRect();
-			movedEls.push([el, x, y]);
-		}
+	const movedEls = els.map((el) => {
+		const { x, y } = el.getBoundingClientRect();
+		return [el, x, y] as [StylableElement, number, number];
 	});
 	movedEls.length &&
 		requestAnimationFrame(() => {
@@ -126,33 +128,41 @@ export function Transition(props: {
 	const getResolved = children(() => props.children);
 	const [getEls, setEls] = createSignal<StylableElement[]>([]);
 
-	createComputed((prevSet: Set<StylableElement>) => {
+	createRenderEffect((prevSet: Set<StylableElement>) => {
 		const resolved = getResolved();
 		const els = (Array.isArray(resolved) ? resolved : [resolved]).filter(
 			(el) => el instanceof Element
 		) as StylableElement[];
 		const currSet = new Set(els);
-		const enteringEls = (enter &&
-			els.filter((el) => !prevSet.has(el))) as StylableElement[];
-		const exitingSet = prevSet;
+		const prevEls = untrack(getEls);
 
-		exitingSet.forEach((el) => currSet.has(el) && exitingSet.delete(el));
-		untrack(getEls).forEach(
-			(el, index) => currSet.has(el) || els.splice(index, 0, el)
-		);
+		moveEls(prevEls, move);
 
-		const deleteEls = () => {
-			setEls((els) => {
-				const nextEls = els.filter((el) => !exitingSet.has(el));
-				moveEls(nextEls, move);
-				return nextEls;
-			});
-		};
+		if (enter) {
+			const enteringEls = els.filter((el) => !prevSet.has(el));
+			enteringEls.length && enter(enteringEls);
+		}
 
-		moveEls(els, move);
-		exitingSet.size && (exit ? exit([...exitingSet], deleteEls) : deleteEls());
+		if (exit) {
+			const exitingSet = prevSet;
+			exitingSet.forEach((el) => currSet.has(el) && exitingSet.delete(el));
+			if (exitingSet.size) {
+				prevEls.forEach(
+					(el, index) => currSet.has(el) || els.splice(index, 0, el)
+				);
+
+				const deleteEls = () =>
+					setEls((els) => {
+						const nextEls = els.filter((el) => !exitingSet.has(el));
+						moveEls(nextEls, move);
+						return nextEls;
+					});
+
+				exit([...exitingSet], deleteEls);
+			}
+		}
+
 		setEls(els);
-		enter && enteringEls.length && enter(enteringEls);
 
 		return currSet;
 	}, new Set());
