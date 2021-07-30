@@ -3,18 +3,18 @@ lockfileVersion: 5.3
 specifiers:
   '@babel/core': ^7.14.8
   '@babel/preset-typescript': ^7.14.5
-  rollup: ^2.55.0
+  rollup: ^2.55.1
   rollup-preset-solid: ^1.0.1
-  solid-js: ^1.0.6
+  solid-js: ^1.0.7
   typescript: ^4.3.5
 
 dependencies:
-  solid-js: 1.0.6
+  solid-js: 1.0.7
 
 devDependencies:
   '@babel/core': 7.14.8
   '@babel/preset-typescript': 7.14.5_@babel+core@7.14.8
-  rollup: 2.55.0
+  rollup: 2.55.1
   rollup-preset-solid: 1.0.1
   typescript: 4.3.5
 
@@ -825,8 +825,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /rollup/2.55.0:
-    resolution: {integrity: sha512-Atc3QqelKzrKwRkqnSdq0d2Mi8e0iGuL+kZebKMZ4ysyWHD5hw9VfVCAuODIW5837RENV8LXcbAEHurYf+ArvA==}
+  /rollup/2.55.1:
+    resolution: {integrity: sha512-1P9w5fpb6b4qroePh8vHKGIvPNxwoCQhjJpIqfZGHLKpZ0xcU2/XBmFxFbc9697/6bmHpmFTLk5R1dAQhFSo0g==}
     engines: {node: '>=10.0.0'}
     hasBin: true
     optionalDependencies:
@@ -852,8 +852,8 @@ packages:
       randombytes: 2.1.0
     dev: true
 
-  /solid-js/1.0.6:
-    resolution: {integrity: sha512-WquWRpg+Tj9eg9hVysc/SiccdthDW68MnKeprJ57mo+R3gwFXzVXbGFcAZuWJWEnDVzm++SlT8ZddOgy27ro0w==}
+  /solid-js/1.0.7:
+    resolution: {integrity: sha512-2jHCXLwp/B7P4kh5tl0ospRaC2F++BU0uWwtfgK/8Zc/MROOyCmmkjHpLAQC2u2NWYVGnIclDIJ2FGDXJ0wcYg==}
     dev: false
 
   /source-map-support/0.5.19:
