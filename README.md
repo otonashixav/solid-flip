@@ -4,11 +4,11 @@ A lightweight, highly performant transitions library for solid-js.
 
 ## Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=1053702462&version=1.0.4)
+[Playground Link](https://playground.solidjs.com/?hash=637833262&version=1.0.6)
 
 ```tsx
 // Basic Usage; most children that resolve to an Element are okay.
-<Transition>
+<Transition enter={animateEnter()} exit={animateExit()} move={animateMove()}>
   <For each={list()}>{(item) => <span>{item}</span>}</For>
   <Switch fallback={<span>Fallback Tab</span>}>
     <Match when={number() === 1}>
@@ -27,11 +27,15 @@ A lightweight, highly performant transitions library for solid-js.
 </Transition>
 ```
 
-The `Transition` component provides all functionality for transitions. This includes `For` components, `Switch` and `Match` for use in routing, etc. By default, it transitions all moved children using the FLIP method, and fades elements in/out when they enter or exit. All children should implement `HTMLElement`, or at least `Element` -- note that SVG elements will not be properly repositioned when exiting by default, although there is no problem unless you are exiting multiple at once, as they do not support `element.offsetLeft` and `element.offsetTop` which are required by the default implementation.
+The `Transition` component provides all functionality for transitions. This includes `For` components, `Switch` and `Match` for use in routing, etc. By default, it transitions all moved children using the FLIP method, and fades elements in/out when they enter or exit. All children should implement `HTMLElement`, or at least `Element` -- note that SVG elements will not be properly repositioned when exiting by default, although there is no problem unless you are exiting multiple at once, as they do not support `element.offsetLeft|Top|Width|Height` which are required by the default implementation.
 
-It accepts three props, `move`, `enter` and `exit`, which take functions that handle the movement, entering, and exiting of props respectively. You can use the exported functions `defaultMove`, `defaultEnter`, and `defaultExit` to customize the default animations for these slightly, but any further changes (e.g. adding classes, triggering other events) must be implemented in custom animation handlers. Additionally, passing `false` for either prop will disable the respective animations.
+It accepts three props, `move`, `enter` and `exit`, which take functions that handle the movement, entering, and exiting of props respectively.
 
 ## Changelog
+
+### 0.3.0
+
+- A `Transition` component without props will no longer default to having all default transition handlers. Instead, they must now be created with the `animateEnter`, `animateExit`, and `animateMove` functions, which implement the handlers using the web animations api. Calling them without parameters will use sensible defaults.
 
 ### 0.2.11
 
