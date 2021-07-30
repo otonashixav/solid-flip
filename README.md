@@ -4,7 +4,7 @@ A lightweight, highly performant transitions library for solid-js.
 
 ## Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=637833262&version=1.0.6)
+[Playground Link](https://playground.solidjs.com/?hash=602462895&version=1.0.7)
 
 ```tsx
 // Basic Usage; most children that resolve to an Element are okay.
