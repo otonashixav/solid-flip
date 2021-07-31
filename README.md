@@ -102,17 +102,25 @@ No additional options.
 
 ### cssTransitionEnter / cssTransitionExit
 
-Uses classes to animate transitions. The only parameter is an object containing three optional properties: `from`, `active`, and `to`, which should each contain a string of classes that should be applied before, throughout, and during (but not before) entering or exiting. Note that these classes are not applied while the element is not actively entering or exiting. Additionally, all elements must have a transition duration set via either class or inline style.
+Uses classes to animate transitions. The only parameter is an object containing three optional properties: `from`, `active`, and `to`, which should each contain a string of classes that should be applied before, throughout, and during (but not before) entering or exiting. Note that these classes are not applied while the element is not actively entering or exiting. Additionally, all elements must have a transition duration set via either active, class or inline style.
 
 ```tsx
 <Transition
-  enter={cssTransitionEnter({ from: 'opacity-0' })}
-  exit={cssTransitionExit({ to: 'opacity-0' })}>
+  enter={cssTransitionEnter({ from: 'opacity-0', active: 'duration-300' })}
+  exit={cssTransitionExit({ to: 'opacity-0', active: 'duration-300' })}>
   ...
 </Transition>
 ```
 
 ## Changelog
+
+### 0.4.6
+
+- Added better documentation
+
+### 0.4.2 - 0.4.5
+
+- Tried to get peerDependencies to work such that all versions of the solid playground would be compatible with the library, but couldn't do it. Will revisit.
 
 ### 0.4.1
 
