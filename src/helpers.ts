@@ -138,18 +138,19 @@ export function cssTransitionEnter(
 			return;
 		}
 		els.forEach((el) => el.classList.add(...fromClasses, ...activeClasses));
-		return () => {
-			els.forEach((el) => {
-				el.classList.remove(...fromClasses);
-				el.classList.add(...toClasses);
-				(toClasses.length || activeClasses.length) &&
-					el.addEventListener(
-						'transitionend',
-						() => el.classList.remove(...toClasses, ...activeClasses),
-						{ once: true }
-					);
-			});
-		};
+		return () =>
+			requestAnimationFrame(() =>
+				els.forEach((el) => {
+					el.classList.remove(...fromClasses);
+					el.classList.add(...toClasses);
+					(toClasses.length || activeClasses.length) &&
+						el.addEventListener(
+							'transitionend',
+							() => el.classList.remove(...toClasses, ...activeClasses),
+							{ once: true }
+						);
+				})
+			);
 	};
 }
 export function cssTransitionExit(
