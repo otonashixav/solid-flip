@@ -33,6 +33,10 @@ It accepts three props, `move`, `enter` and `exit`, which take functions that ha
 
 ## Changelog
 
+### 0.4.1
+
+- Fix firefox not applying enter styling on the first frame for whatever reason
+
 ### 0.4.0
 
 - Replaced the `skipInitial` parameter in `animateEnter` with an options object; split the `cssEnterExit` function into two, `cssTransitionEnter` and `cssTransitionExit`.
