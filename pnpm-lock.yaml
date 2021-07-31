@@ -8,14 +8,12 @@ specifiers:
   solid-js: ^1.0.7
   typescript: ^4.3.5
 
-dependencies:
-  solid-js: 1.0.7
-
 devDependencies:
   '@babel/core': 7.14.8
   '@babel/preset-typescript': 7.14.5_@babel+core@7.14.8
   rollup: 2.55.1
   rollup-preset-solid: 1.0.1
+  solid-js: 1.0.7
   typescript: 4.3.5
 
 packages:
@@ -854,7 +852,7 @@ packages:
 
   /solid-js/1.0.7:
     resolution: {integrity: sha512-2jHCXLwp/B7P4kh5tl0ospRaC2F++BU0uWwtfgK/8Zc/MROOyCmmkjHpLAQC2u2NWYVGnIclDIJ2FGDXJ0wcYg==}
-    dev: false
+    dev: true
 
   /source-map-support/0.5.19:
     resolution: {integrity: sha512-Wonm7zOCIJzBGQdB+thsPar0kYuCIzYvxZwlBa87yi/Mdjv7Tip2cyVbLj5o0cFPN4EVkuTwb3GDDyUx2DGnGw==}
