@@ -1,6 +1,6 @@
 {
   "name": "@otonashixav/solid-flip",
-  "version": "0.4.2",
+  "version": "0.4.1",
   "description": "A lightweight FLIP library for solid-js",
   "sideEffects": false,
   "type": "module",
@@ -39,7 +39,10 @@
     "url": "https://github.com/otonashixav/solid-flip/issues"
   },
   "homepage": "https://github.com/otonashixav/solid-flip#readme",
+  "dependencies": {
+    "solid-js": "^1.0.7"
+  },
   "peerDependencies": {
-    "solid-js": "^1.0.0"
+    "solid-js": ">= 0.26.5"
   }
 }
