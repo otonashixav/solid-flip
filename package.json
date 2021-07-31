@@ -40,6 +40,6 @@
   },
   "homepage": "https://github.com/otonashixav/solid-flip#readme",
   "peerDependencies": {
-    "solid-js": "^1.0.0"
+    "solid-js": ">= 1.0.0"
   }
 }
