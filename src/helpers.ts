@@ -66,13 +66,14 @@ export function animateMove(
 	}),
 	animationOptions?: KeyframeAnimationOptions
 ): MoveFunction {
-	const options = {
-		...DEFAULT_OPTIONS,
-		...animationOptions,
-	};
 	return (els) =>
 		filterMoved(els, (movedEls) =>
-			movedEls.forEach(([el, x, y]) => el.animate(getKeyframes(x, y), options))
+			movedEls.forEach(([el, x, y]) =>
+				el.animate(getKeyframes(x, y), {
+					...DEFAULT_OPTIONS,
+					...animationOptions,
+				})
+			)
 		);
 }
 
@@ -118,8 +119,9 @@ export function animateExit(
 	};
 }
 
-export function cssTransitionEnter(
+export function cssEnter(
 	classes: {
+		name?: string;
 		from?: string;
 		to?: string;
 		active?: string;
@@ -132,6 +134,13 @@ export function cssTransitionEnter(
 	const fromClasses = classes.from?.split(' ') ?? [];
 	const toClasses = classes.to?.split(' ') ?? [];
 	const activeClasses = classes.active?.split(' ') ?? [];
+
+	if (classes.name) {
+		fromClasses.push(classes.name + '-enter-from');
+		toClasses.push(classes.name + '-enter-to');
+		activeClasses.push(classes.name + '-enter-active');
+	}
+
 	return (els) => {
 		if (skipInitial) {
 			skipInitial = false;
@@ -143,19 +152,20 @@ export function cssTransitionEnter(
 				els.forEach((el) => {
 					el.classList.remove(...fromClasses);
 					el.classList.add(...toClasses);
-					(toClasses.length || activeClasses.length) &&
-						el.addEventListener(
-							'transitionend',
-							() => el.classList.remove(...toClasses, ...activeClasses),
-							{ once: true }
-						);
+					const removeClasses = () =>
+						el.classList.remove(...toClasses, ...activeClasses);
+					if (toClasses.length || activeClasses.length) {
+						el.addEventListener('transitionend', removeClasses, { once: true });
+						el.addEventListener('animationend', removeClasses, { once: true });
+					}
 				})
 			);
 	};
 }
 
-export function cssTransitionExit(
+export function cssExit(
 	classes: {
+		name?: string;
 		from?: string;
 		to?: string;
 		active?: string;
@@ -168,10 +178,17 @@ export function cssTransitionExit(
 	const fromClasses = classes.from?.split(' ') ?? [];
 	const toClasses = classes.to?.split(' ') ?? [];
 	const activeClasses = classes.active?.split(' ') ?? [];
+
+	if (classes.name) {
+		fromClasses.push(classes.name + '-exit-from');
+		toClasses.push(classes.name + '-exit-to');
+		activeClasses.push(classes.name + '-exit-active');
+	}
+
 	return (els, removeEls) => {
 		const setAbsolute = fixPosition && fixPositions(els);
 		els.forEach((el) => {
-			el.dispatchEvent(new TransitionEvent('transitionend'));
+			el.dispatchEvent(new AnimationEvent('animationend'));
 			el.classList.add(...fromClasses, ...activeClasses);
 		});
 		return () => {
@@ -179,7 +196,10 @@ export function cssTransitionExit(
 			els.forEach((el, i) => {
 				el.classList.remove(...fromClasses);
 				el.classList.add(...toClasses);
-				!i && el.addEventListener('transitionend', removeEls, { once: true });
+				if (!i) {
+					el.addEventListener('transitionend', removeEls, { once: true });
+					el.addEventListener('animationend', removeEls, { once: true });
+				}
 			});
 		};
 	};
