@@ -100,19 +100,27 @@ No additional options.
 </Transition>
 ```
 
-### cssTransitionEnter / cssTransitionExit
+### cssEnter / cssExit
 
-Uses classes to animate transitions. The only parameter is an object containing three optional properties: `from`, `active`, and `to`, which should each contain a string of classes that should be applied before, throughout, and during (but not before) entering or exiting. Note that these classes are not applied while the element is not actively entering or exiting. Additionally, all elements must have a transition duration set via either active, class or inline style.
+Uses classes to animate transitions. The only parameter is an object containing four optional properties: `from`, `active`, and `to`, which should each contain a string of classes that should be applied before, throughout, and during (but not before) entering or exiting, and `name`, which if provided will be suffixed with `-enter-from`, `-enter-active`, `-enter-to`, and the same with exit, and applied at the respective times as well. Note that these classes are not applied while the element is not actively entering or exiting. Additionally, all elements must have a transition duration set via either active, class or inline style, or have an active class which supplies a css animation, such that either a `transitionend` or `animationend` event is fired once the element has finished the entering or exiting animation or transition.
 
 ```tsx
 <Transition
-  enter={cssTransitionEnter({ from: 'opacity-0', active: 'duration-300' })}
-  exit={cssTransitionExit({ to: 'opacity-0', active: 'duration-300' })}>
+  enter={cssEnter({
+    from: 'opacity-0',
+    active: 'duration-300',
+    name: 'my-list',
+  })}
+  exit={cssExit({ to: 'opacity-0', active: 'duration-300', name: 'my-list' })}>
   ...
 </Transition>
 ```
 
 ## Changelog
+
+### 0.5.0
+
+- Added support for `name` and css animations in css helpers, renamed the css helpers. Note that css animations are untested (because I'm unfamiliar with them), so feedback is appreciated
 
 ### 0.4.6
 
