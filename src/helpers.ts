@@ -27,7 +27,7 @@ export function filterMoved(
 	};
 }
 
-export function positionAbsolute(els: StylableElement[]): () => void {
+export function fixPositions(els: StylableElement[]): () => void {
 	const offsetsList = els.map<[StylableElement, Record<string, number> | null]>(
 		(el) => [
 			el,
@@ -104,7 +104,7 @@ export function animateExit(
 ): ExitFunction {
 	const { fixPosition = true } = options;
 	return (els, done) => {
-		const setAbsolute = fixPosition && positionAbsolute(els);
+		const setAbsolute = fixPosition && fixPositions(els);
 		return () => {
 			fixPosition && (setAbsolute as () => void)();
 			els.forEach((el, i) => {
@@ -153,6 +153,7 @@ export function cssTransitionEnter(
 			);
 	};
 }
+
 export function cssTransitionExit(
 	classes: {
 		from?: string;
@@ -168,7 +169,7 @@ export function cssTransitionExit(
 	const toClasses = classes.to?.split(' ') ?? [];
 	const activeClasses = classes.active?.split(' ') ?? [];
 	return (els, removeEls) => {
-		const setAbsolute = fixPosition && positionAbsolute(els);
+		const setAbsolute = fixPosition && fixPositions(els);
 		els.forEach((el) => {
 			el.dispatchEvent(new TransitionEvent('transitionend'));
 			el.classList.add(...fromClasses, ...activeClasses);
