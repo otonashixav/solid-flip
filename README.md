@@ -33,6 +33,10 @@ It accepts three props, `move`, `enter` and `exit`, which take functions that ha
 
 ## Changelog
 
+### 0.4.0
+
+- Replaced the `skipInitial` parameter in `animateEnter` with an options object; split the `cssEnterExit` function into two, `cssTransitionEnter` and `cssTransitionExit`.
+
 ### 0.3.5
 
 - Add a new helper, `cssEnterExit` that takes enter/exit class strings and returns an object containing the `enter` and `exit` props. See the playground link for an example.
