@@ -51,7 +51,7 @@ export function animateMove(
 
 export function animateEnter(
 	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
-		opacity: ['0', 'inherit'],
+		opacity: [0, 1],
 	},
 	animationOptions?: KeyframeAnimationOptions,
 	skipInitial = true
@@ -65,7 +65,7 @@ export function animateEnter(
 
 export function animateExit(
 	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
-		opacity: ['inherit', '0'],
+		opacity: [1, 0],
 	},
 	animationOptions?: KeyframeAnimationOptions
 ): ExitFunction {
