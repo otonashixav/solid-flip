@@ -33,6 +33,22 @@ It accepts three props, `move`, `enter` and `exit`, which take functions that ha
 
 ## Changelog
 
+### 0.3.4
+
+- Apply the previous animation fix to all animations instead of just move where it is most apparent
+
+### 0.3.3
+
+- Fix animation jitteryness in firefox
+
+### 0.3.2
+
+- Fix opacity values (should not be inherit)
+
+### 0.3.1
+
+- Fix readme playground link
+
 ### 0.3.0
 
 - A `Transition` component without props will no longer default to having all default transition handlers. Instead, they must now be created with the `animateEnter`, `animateExit`, and `animateMove` functions, which implement the handlers using the web animations api. Calling them without parameters will use sensible defaults.
