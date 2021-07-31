@@ -1,13 +1,26 @@
 # Solid FLIP
 
-A lightweight, highly performant transitions library for solid-js.
+A lightweight transition library for solid-js.
 
-## Usage
+## Installation
+
+```sh
+npm i @otonashixav/solid-flip
+```
+
+```sh
+yarn add @otonashixav/solid-flip
+```
+
+```sh
+pnpm i @otonashixav/solid-flip
+```
+
+## Basic Usage
 
 [Playground Link](https://playground.solidjs.com/?hash=1582873785&version=1.0.7)
 
 ```tsx
-// Basic Usage; most children that resolve to an Element are okay.
 <Transition enter={animateEnter()} exit={animateExit()} move={animateMove()}>
   <For each={list()}>{(item) => <span>{item}</span>}</For>
   <Switch fallback={<span>Fallback Tab</span>}>
@@ -27,9 +40,77 @@ A lightweight, highly performant transitions library for solid-js.
 </Transition>
 ```
 
-The `Transition` component provides all functionality for transitions. This includes `For` components, `Switch` and `Match` for use in routing, etc. By default, it transitions all moved children using the FLIP method, and fades elements in/out when they enter or exit. All children should implement `HTMLElement`, or at least `Element` -- note that SVG elements will not be properly repositioned when exiting by default, although there is no problem unless you are exiting multiple at once, as they do not support `element.offsetLeft|Top|Width|Height` which are required by the default implementation.
+## `<Transition>`
 
-It accepts three props, `move`, `enter` and `exit`, which take functions that handle the movement, entering, and exiting of props respectively.
+The `Transition` component should wrap HTML and SVG elements to be transitioned. Note that although top-level SVG child elements are supported, it is ideal to wrap them in a `<div>` or other HTML element. The `Transition` component accepts three props containing the actual transition implementations.
+
+### Props
+
+The `Transition` component takes three props: `enter`, `exit`, and `move`. These accept functions that take an array of elements which need to be transitioned, figure out what changes to make (if needed), then return a callback containing all changes to be made. The `exit` prop additionally takes a `removeElements` function which should be called when it is done removing elements.
+
+## Helper Functions
+
+These exist to help compose `enter`, `exit` and `move` handler functions, covering most basic scenarios. You will have to write your own handlers for more complex scenarios.
+
+### animateEnter / animateExit / animateMove
+
+Uses `element.animate` to animate transitions. Takes the same parameters as `element.animate` (in the case of animateMove, the keyframes should be provided as a function which take two numbers, `x` and `y`, and return the actual keyframes; see the FLIP technique for more details on how to use these values). The third parameter is an object which contains additional options. All parameters are optional, defaulting to a simple fade in/out and linear slide.
+
+#### animateEnter
+
+Takes one additional option, `skipInitial`, defaulting to true, which skips the initial enter transition.
+
+```tsx
+<Transition
+  enter={animateEnter(
+    { opacity: [0, 1] },
+    { duration: 300, easing: 'ease', fill: 'backwards' },
+    { skipInitial: true }
+  )}>
+  ...
+</Transition>
+```
+
+#### animateExit
+
+Takes one additional option, `fixPosition`, defaulting to true, which sets the `position` proeprty of exiting elements to `absolute`, removes margins, and fixes `left, top, width, height` such that the exiting element is removed from the document flow without changes to how it renders.
+
+```tsx
+<Transition
+  exit={animateExit(
+    { opacity: [1, 0] },
+    { duration: 300, easing: 'ease', fill: 'backwards' },
+    { fixPosition: true }
+  )}>
+  ...
+</Transition>
+```
+
+#### animateMove
+
+No additional options.
+
+```tsx
+<Transition
+  move={animateMove(
+    (x, y) => ({ transform: [`translate(${x}px,${y}px)`, 'none'] }),
+    { duration: 300, easing: 'ease', fill: 'backwards' }
+  )}>
+  ...
+</Transition>
+```
+
+### cssTransitionEnter / cssTransitionExit
+
+Uses classes to animate transitions. The only parameter is an object containing three optional properties: `from`, `active`, and `to`, which should each contain a string of classes that should be applied before, throughout, and during (but not before) entering or exiting. Note that these classes are not applied while the element is not actively entering or exiting. Additionally, all elements must have a transition duration set via either class or inline style.
+
+```tsx
+<Transition
+  enter={cssTransitionEnter({ from: 'opacity-0' })}
+  exit={cssTransitionExit({ to: 'opacity-0' })}>
+  ...
+</Transition>
+```
 
 ## Changelog
 
