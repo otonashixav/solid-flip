@@ -39,10 +39,7 @@
     "url": "https://github.com/otonashixav/solid-flip/issues"
   },
   "homepage": "https://github.com/otonashixav/solid-flip#readme",
-  "dependencies": {
-    "solid-js": "^1.0.7"
-  },
   "peerDependencies": {
-    "solid-js": ">= 0.26.5"
+    "solid-js": "^1.0.0"
   }
 }
