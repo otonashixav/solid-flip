@@ -99,3 +99,70 @@ export function animateExit(
 			});
 	};
 }
+
+export function cssEnterExit(
+	classes: {
+		enter?: string;
+		enterTo?: string;
+		enterActive?: string;
+		exit?: string;
+		exitTo?: string;
+		exitActive?: string;
+	},
+	options: {
+		skipInitial?: boolean;
+	} = {}
+): { enter?: EnterFunction; exit?: ExitFunction } {
+	let { skipInitial = true } = options;
+	const enterClasses = classes.enter?.split(' ') ?? [];
+	const enterToClasses = classes.enterTo?.split(' ') ?? [];
+	const enterActiveClasses = classes.enterActive?.split(' ') ?? [];
+	const exitClasses = classes.exit?.split(' ') ?? [];
+	const exitToClasses = classes.exitTo?.split(' ') ?? [];
+	const exitActiveClasses = classes.exitActive?.split(' ') ?? [];
+
+	const enter: EnterFunction = (els) => {
+		if (skipInitial) {
+			skipInitial = false;
+			return;
+		}
+		els.forEach((el) =>
+			el.classList.add(...enterClasses, ...enterActiveClasses)
+		);
+		return () => {
+			els.forEach((el) => {
+				el.classList.remove(...enterClasses);
+				el.classList.add(...enterToClasses);
+				(enterToClasses.length || enterActiveClasses.length) &&
+					el.addEventListener(
+						'transitionend',
+						() => el.classList.remove(...enterToClasses, ...enterActiveClasses),
+						{ once: true }
+					);
+			});
+		};
+	};
+
+	const exit: ExitFunction = (els, removeEls) => {
+		els.forEach((el) => {
+			el.classList.remove(
+				...enterClasses,
+				...enterToClasses,
+				...enterActiveClasses
+			);
+			el.classList.add(...exitClasses, ...exitActiveClasses);
+		});
+		return () => {
+			els.forEach((el) => {
+				el.classList.remove(...exitClasses);
+				el.classList.add(...exitToClasses);
+				el.addEventListener('transitionend', removeEls, { once: true });
+			});
+		};
+	};
+
+	return {
+		...((classes.enter || classes.enterTo || classes.enterActive) && { enter }),
+		...((classes.exit || classes.exitTo || classes.exitActive) && { exit }),
+	};
+}
