@@ -27,6 +27,29 @@ export function filterMoved(
 	};
 }
 
+export function positionAbsolute(els: StylableElement[]): () => void {
+	const offsetsList = els.map<[StylableElement, Record<string, number> | null]>(
+		(el) => [
+			el,
+			el instanceof HTMLElement
+				? {
+						left: el.offsetLeft,
+						top: el.offsetTop,
+						width: el.offsetWidth,
+						height: el.offsetHeight,
+				  }
+				: null,
+		]
+	);
+	return () =>
+		offsetsList.forEach(([el, offsets]) => {
+			el.style.setProperty('position', 'absolute');
+			el.style.setProperty('margin', '0px');
+			for (const name in offsets)
+				el.style.setProperty(name, `${offsets[name]}px`);
+		});
+}
+
 const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
 	duration: 300,
 	easing: 'ease',
@@ -58,111 +81,104 @@ export function animateEnter(
 		opacity: [0, 1],
 	},
 	animationOptions?: KeyframeAnimationOptions,
-	skipInitial = true
+	options: {
+		skipInitial?: boolean;
+	} = {}
 ): EnterFunction {
-	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
+	let { skipInitial = true } = options;
 	return (els) =>
 		skipInitial
 			? void (skipInitial = false)
-			: () => els.forEach((el) => el.animate(keyframes, options));
+			: () =>
+					els.forEach((el) =>
+						el.animate(keyframes, { ...DEFAULT_OPTIONS, ...animationOptions })
+					);
 }
 
 export function animateExit(
 	keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
 		opacity: [1, 0],
 	},
-	animationOptions?: KeyframeAnimationOptions
+	animationOptions?: KeyframeAnimationOptions,
+	options: { fixPosition?: boolean } = {}
 ): ExitFunction {
-	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
+	const { fixPosition = true } = options;
 	return (els, done) => {
-		const offsetsList = els.map<
-			[StylableElement, Record<string, number> | null]
-		>((el) => [
-			el,
-			el instanceof HTMLElement
-				? {
-						left: el.offsetLeft,
-						top: el.offsetTop,
-						width: el.offsetWidth,
-						height: el.offsetHeight,
-				  }
-				: null,
-		]);
-		return () =>
-			offsetsList.forEach(([el, offsets], i) => {
-				el.style.setProperty('position', 'absolute');
-				el.style.setProperty('margin', '0px');
-				for (const name in offsets)
-					el.style.setProperty(name, `${offsets[name]}px`);
-				const finished = el.animate(keyframes, options).finished;
+		const setAbsolute = fixPosition && positionAbsolute(els);
+		return () => {
+			fixPosition && (setAbsolute as () => void)();
+			els.forEach((el, i) => {
+				const finished = el.animate(keyframes, {
+					...DEFAULT_OPTIONS,
+					...animationOptions,
+				}).finished;
 				!i && finished.then(done);
 			});
+		};
 	};
 }
 
-export function cssEnterExit(
+export function cssTransitionEnter(
 	classes: {
-		enter?: string;
-		enterTo?: string;
-		enterActive?: string;
-		exit?: string;
-		exitTo?: string;
-		exitActive?: string;
+		from?: string;
+		to?: string;
+		active?: string;
 	},
 	options: {
 		skipInitial?: boolean;
 	} = {}
-): { enter?: EnterFunction; exit?: ExitFunction } {
+): EnterFunction {
 	let { skipInitial = true } = options;
-	const enterClasses = classes.enter?.split(' ') ?? [];
-	const enterToClasses = classes.enterTo?.split(' ') ?? [];
-	const enterActiveClasses = classes.enterActive?.split(' ') ?? [];
-	const exitClasses = classes.exit?.split(' ') ?? [];
-	const exitToClasses = classes.exitTo?.split(' ') ?? [];
-	const exitActiveClasses = classes.exitActive?.split(' ') ?? [];
-
-	const enter: EnterFunction = (els) => {
+	const fromClasses = classes.from?.split(' ') ?? [];
+	const toClasses = classes.to?.split(' ') ?? [];
+	const activeClasses = classes.active?.split(' ') ?? [];
+	return (els) => {
 		if (skipInitial) {
 			skipInitial = false;
 			return;
 		}
-		els.forEach((el) =>
-			el.classList.add(...enterClasses, ...enterActiveClasses)
-		);
+		els.forEach((el) => el.classList.add(...fromClasses, ...activeClasses));
 		return () => {
 			els.forEach((el) => {
-				el.classList.remove(...enterClasses);
-				el.classList.add(...enterToClasses);
-				(enterToClasses.length || enterActiveClasses.length) &&
+				el.classList.remove(...fromClasses);
+				el.classList.add(...toClasses);
+				(toClasses.length || activeClasses.length) &&
 					el.addEventListener(
 						'transitionend',
-						() => el.classList.remove(...enterToClasses, ...enterActiveClasses),
+						() => el.classList.remove(...toClasses, ...activeClasses),
 						{ once: true }
 					);
 			});
 		};
 	};
-
-	const exit: ExitFunction = (els, removeEls) => {
+}
+export function cssTransitionExit(
+	classes: {
+		from?: string;
+		to?: string;
+		active?: string;
+	},
+	options: {
+		fixPosition?: boolean;
+	} = {}
+): ExitFunction {
+	let { fixPosition = true } = options;
+	const fromClasses = classes.from?.split(' ') ?? [];
+	const toClasses = classes.to?.split(' ') ?? [];
+	const activeClasses = classes.active?.split(' ') ?? [];
+	return (els, removeEls) => {
+		const setAbsolute = fixPosition && positionAbsolute(els);
 		els.forEach((el) => {
-			el.classList.remove(
-				...enterClasses,
-				...enterToClasses,
-				...enterActiveClasses
-			);
-			el.classList.add(...exitClasses, ...exitActiveClasses);
+			el.dispatchEvent(new TransitionEvent('transitionend'));
+			el.classList.add(...fromClasses, ...activeClasses);
 		});
 		return () => {
-			els.forEach((el) => {
-				el.classList.remove(...exitClasses);
-				el.classList.add(...exitToClasses);
-				el.addEventListener('transitionend', removeEls, { once: true });
+			fixPosition && (setAbsolute as () => void)();
+			els.forEach((el, i) => {
+				el.classList.remove(...fromClasses);
+				el.classList.add(...toClasses);
+				!i && el.addEventListener('transitionend', removeEls, { once: true });
 			});
 		};
-	};
-
-	return {
-		...((classes.enter || classes.enterTo || classes.enterActive) && { enter }),
-		...((classes.exit || classes.exitTo || classes.exitActive) && { exit }),
 	};
 }
