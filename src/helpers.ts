@@ -42,7 +42,11 @@ export function animateMove(
 	}),
 	animationOptions?: KeyframeAnimationOptions
 ): MoveFunction {
-	const options = { ...DEFAULT_OPTIONS, ...animationOptions };
+	const options = {
+		...DEFAULT_OPTIONS,
+		fill: 'backwards' as 'backwards',
+		...animationOptions,
+	};
 	return (els) =>
 		filterMoved(els, (movedEls) =>
 			movedEls.forEach(([el, x, y]) => el.animate(getKeyframes(x, y), options))
