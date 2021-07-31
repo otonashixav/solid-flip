@@ -30,6 +30,7 @@ export function filterMoved(
 const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
 	duration: 300,
 	easing: 'ease',
+	fill: 'backwards',
 };
 
 export function animateMove(
@@ -44,7 +45,6 @@ export function animateMove(
 ): MoveFunction {
 	const options = {
 		...DEFAULT_OPTIONS,
-		fill: 'backwards' as 'backwards',
 		...animationOptions,
 	};
 	return (els) =>
