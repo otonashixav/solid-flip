@@ -152,8 +152,7 @@ export function cssEnter(
 				els.forEach((el) => {
 					el.classList.remove(...fromClasses);
 					el.classList.add(...toClasses);
-					const removeClasses = () =>
-						el.classList.remove(...toClasses, ...activeClasses);
+					const removeClasses = () => el.classList.remove(...activeClasses);
 					if (toClasses.length || activeClasses.length) {
 						el.addEventListener('transitionend', removeClasses, { once: true });
 						el.addEventListener('animationend', removeClasses, { once: true });

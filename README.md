@@ -102,7 +102,7 @@ No additional options.
 
 ### cssEnter / cssExit
 
-Uses classes to animate transitions. The only parameter is an object containing four optional properties: `from`, `active`, and `to`, which should each contain a string of classes that should be applied before, throughout, and during (but not before) entering or exiting, and `name`, which if provided will be suffixed with `-enter-from`, `-enter-active`, `-enter-to`, and the same with exit, and applied at the respective times as well. Note that these classes are not applied while the element is not actively entering or exiting. Additionally, all elements must have a transition duration set via either active, class or inline style, or have an active class which supplies a css animation, such that either a `transitionend` or `animationend` event is fired once the element has finished the entering or exiting animation or transition.
+Uses classes to animate transitions. The only parameter is an object containing four optional properties: `from`, `active`, and `to`, which should each contain a string of classes that should be applied during the first frame of, throughout, and after the first frame of entering and exiting, and `name`, which if provided will be suffixed with `-enter-from`, `-enter-active`, `-enter-to`, and the same with exit, and applied at the respective times as well. `to` classes will remain on the element. Additionally, all elements must have a transition duration set via either active, class or inline style, or have an active class which supplies a css animation, such that either a `transitionend` or `animationend` event is fired once the element has finished the entering or exiting animation or transition.
 
 ```tsx
 <Transition
@@ -117,6 +117,14 @@ Uses classes to animate transitions. The only parameter is an object containing 
 ```
 
 ## Changelog
+
+### 0.5.2
+
+- `to` classes now remain on the element after entering/exiting, enabling some use cases. This should not break any existing cases as far as I am aware.
+
+### 0.5.1
+
+- Updated playground link
 
 ### 0.5.0
 
