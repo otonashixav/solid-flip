@@ -118,6 +118,10 @@ Uses classes to animate transitions. The only parameter is an object containing 
 
 ## Changelog
 
+### 0.5.3
+
+- Update dependencies
+
 ### 0.5.2
 
 - `to` classes now remain on the element after entering/exiting, enabling some use cases. This should not break any existing cases as far as I am aware.
