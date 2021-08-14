@@ -103,7 +103,7 @@ export function animateExit(
 	animationOptions?: KeyframeAnimationOptions,
 	options: { fixPosition?: boolean } = {}
 ): ExitFunction {
-	const { fixPosition = true } = options;
+	const { fixPosition } = options;
 	return (els, done) => {
 		const setAbsolute = fixPosition && fixPositions(els);
 		return () => {
@@ -173,7 +173,7 @@ export function cssExit(
 		fixPosition?: boolean;
 	} = {}
 ): ExitFunction {
-	let { fixPosition = true } = options;
+	let { fixPosition } = options;
 	const fromClasses = classes.from?.split(' ') ?? [];
 	const toClasses = classes.to?.split(' ') ?? [];
 	const activeClasses = classes.active?.split(' ') ?? [];

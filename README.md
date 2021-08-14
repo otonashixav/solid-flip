@@ -73,14 +73,14 @@ Takes one additional option, `skipInitial`, defaulting to true, which skips the 
 
 #### animateExit
 
-Takes one additional option, `fixPosition`, defaulting to true, which sets the `position` proeprty of exiting elements to `absolute`, removes margins, and fixes `left, top, width, height` such that the exiting element is removed from the document flow without changes to how it renders.
+Takes one additional option, `fixPosition`, defaulting to false, which sets the `position` proeprty of exiting elements to `absolute`, removes margins, and fixes `left, top, width, height` such that the exiting element is removed from the document flow without changes to how it renders.
 
 ```tsx
 <Transition
   exit={animateExit(
     { opacity: [1, 0] },
     { duration: 300, easing: 'ease', fill: 'backwards' },
-    { fixPosition: true }
+    { fixPosition: false }
   )}>
   ...
 </Transition>
@@ -117,6 +117,10 @@ Uses classes to animate transitions. The only parameter is an object containing 
 ```
 
 ## Changelog
+
+### 0.5.4
+
+- Change default `fixPosition` to false as it is more often not used than used.
 
 ### 0.5.3
 
