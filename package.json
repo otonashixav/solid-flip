@@ -19,12 +19,12 @@
   "author": "Xavier Loh",
   "license": "WTFPL",
   "devDependencies": {
-    "@babel/core": "^7.15.0",
+    "@babel/core": "^7.15.5",
     "@babel/preset-typescript": "^7.15.0",
-    "rollup": "^2.56.2",
+    "rollup": "^2.56.3",
     "rollup-preset-solid": "^1.0.1",
-    "solid-js": "^1.1.0",
-    "typescript": "^4.3.5"
+    "solid-js": "^1.1.2",
+    "typescript": "^4.4.2"
   },
   "files": [
     "dist"
