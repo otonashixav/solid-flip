@@ -152,11 +152,15 @@ export function cssEnter(
 				els.forEach((el) => {
 					el.classList.remove(...fromClasses);
 					el.classList.add(...toClasses);
-					const removeClasses = () => el.classList.remove(...activeClasses);
-					if (toClasses.length || activeClasses.length) {
-						el.addEventListener('transitionend', removeClasses, { once: true });
-						el.addEventListener('animationend', removeClasses, { once: true });
-					}
+					const endHandler = (ev: Event) => {
+						if (ev.target === el) {
+							el.classList.remove(...activeClasses);
+							el.removeEventListener('transitionend', endHandler);
+							el.removeEventListener('animationend', endHandler);
+						}
+					};
+					el.addEventListener('transitionend', endHandler);
+					el.addEventListener('animationend', endHandler);
 				})
 			);
 	};
@@ -195,9 +199,16 @@ export function cssExit(
 			els.forEach((el, i) => {
 				el.classList.remove(...fromClasses);
 				el.classList.add(...toClasses);
-				if (!i) {
-					el.addEventListener('transitionend', removeEls, { once: true });
-					el.addEventListener('animationend', removeEls, { once: true });
+				if (i === 0) {
+					const endHandler = (ev: Event) => {
+						if (ev.target === el) {
+							removeEls();
+							el.removeEventListener('transitionend', endHandler);
+							el.removeEventListener('animationend', endHandler);
+						}
+					};
+					el.addEventListener('transitionend', endHandler);
+					el.addEventListener('animationend', endHandler);
 				}
 			});
 		};

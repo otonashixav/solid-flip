@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=-42731826&version=1.0.7)
+[Playground Link](https://playground.solidjs.com/?hash=-481064695&version=1.1.2)
 
 ```tsx
 <Transition enter={animateEnter()} exit={animateExit()} move={animateMove()}>
@@ -106,17 +106,27 @@ Uses classes to animate transitions. The only parameter is an object containing 
 
 ```tsx
 <Transition
-  enter={cssEnter({
-    from: 'opacity-0',
-    active: 'duration-300',
-    name: 'my-list',
-  })}
-  exit={cssExit({ to: 'opacity-0', active: 'duration-300', name: 'my-list' })}>
+  enter={cssEnter(
+    {
+      from: 'opacity-0',
+      active: 'duration-300',
+      name: 'my-list',
+    },
+    { skipInitial: true }
+  )}
+  exit={cssExit(
+    { to: 'opacity-0', active: 'duration-300', name: 'my-list' },
+    { fixPosition: false }
+  )}>
   ...
 </Transition>
 ```
 
 ## Changelog
+
+### 0.5.5
+
+- Ignore `transitionend` and `animationend` events from elements other than the target element, fixing [#1](https://github.com/otonashixav/solid-flip/issues/1).
 
 ### 0.5.4
 
