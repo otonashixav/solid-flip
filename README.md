@@ -64,9 +64,10 @@ Takes one additional option, `skipInitial`, defaulting to true, which skips the 
 <Transition
   enter={animateEnter(
     { opacity: [0, 1] },
-    { duration: 300, easing: 'ease', fill: 'backwards' },
+    { duration: 300, easing: "ease", fill: "backwards" },
     { skipInitial: true }
-  )}>
+  )}
+>
   ...
 </Transition>
 ```
@@ -79,9 +80,10 @@ Takes one additional option, `fixPosition`, defaulting to false, which sets the 
 <Transition
   exit={animateExit(
     { opacity: [1, 0] },
-    { duration: 300, easing: 'ease', fill: 'backwards' },
+    { duration: 300, easing: "ease", fill: "backwards" },
     { fixPosition: false }
-  )}>
+  )}
+>
   ...
 </Transition>
 ```
@@ -93,9 +95,10 @@ No additional options.
 ```tsx
 <Transition
   move={animateMove(
-    (x, y) => ({ transform: [`translate(${x}px,${y}px)`, 'none'] }),
-    { duration: 300, easing: 'ease', fill: 'backwards' }
-  )}>
+    (x, y) => ({ transform: [`translate(${x}px,${y}px)`, "none"] }),
+    { duration: 300, easing: "ease", fill: "backwards" }
+  )}
+>
   ...
 </Transition>
 ```
@@ -108,21 +111,26 @@ Uses classes to animate transitions. The only parameter is an object containing 
 <Transition
   enter={cssEnter(
     {
-      from: 'opacity-0',
-      active: 'duration-300',
-      name: 'my-list',
+      from: "opacity-0",
+      active: "duration-300",
+      name: "my-list",
     },
     { skipInitial: true }
   )}
   exit={cssExit(
-    { to: 'opacity-0', active: 'duration-300', name: 'my-list' },
+    { to: "opacity-0", active: "duration-300", name: "my-list" },
     { fixPosition: false }
-  )}>
+  )}
+>
   ...
 </Transition>
 ```
 
 ## Changelog
+
+### 0.5.6
+
+- Make `Transition` props reactive, fixing [#2](https://github.com/otonashixav/solid-flip/issues/2).
 
 ### 0.5.5
 
