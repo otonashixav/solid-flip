@@ -19,11 +19,13 @@ export function Transition(props: {
 	enter?: EnterFunction;
 	exit?: ExitFunction;
 }): JSX.Element {
-	const { move, enter, exit } = props;
 	const getResolved = children(() => props.children);
 	const [getEls, setEls] = createSignal<StylableElement[]>([]);
 
 	createRenderEffect((prevSet: Set<StylableElement>) => {
+		const move = untrack(() => props.move);
+		const enter = untrack(() => props.enter);
+		const exit = untrack(() => props.exit);
 		const resolved = getResolved();
 		const els = (Array.isArray(resolved) ? resolved : [resolved]).filter(
 			(el) => el instanceof Element
@@ -48,7 +50,7 @@ export function Transition(props: {
 				removeEls = () =>
 					setEls((els) => {
 						const nextEls = els.filter((el) => !exitingSet.has(el));
-						const resumeMove = move?.(nextEls);
+						const resumeMove = untrack(() => props.move)?.(nextEls);
 						resumeMove && requestAnimationFrame(resumeMove);
 						return nextEls;
 					});
