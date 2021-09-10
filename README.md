@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=-481064695&version=1.1.2)
+[Playground Link](https://playground.solidjs.com/?hash=2029114542&version=1.1.3)
 
 ```tsx
 <Transition enter={animateEnter()} exit={animateExit()} move={animateMove()}>
