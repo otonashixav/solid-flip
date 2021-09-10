@@ -130,7 +130,7 @@ Uses classes to animate transitions. The only parameter is an object containing 
 
 ### 0.5.6
 
-- Make `Transition` props reactive, fixing [#2](https://github.com/otonashixav/solid-flip/issues/2). Additionally swapped the project to spaces over tabs and double quotes over single quotes, following convention.
+- Make `Transition` props reactive between transitions, fixing [#2](https://github.com/otonashixav/solid-flip/issues/2). Additionally swapped the project to spaces over tabs and double quotes over single quotes, following convention.
 
 ### 0.5.5
 
