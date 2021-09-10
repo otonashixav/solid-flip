@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=2029114542&version=1.1.3)
+[Playground Link](https://playground.solidjs.com/?hash=-538345280&version=1.1.3)
 
 ```tsx
 <Transition enter={animateEnter()} exit={animateExit()} move={animateMove()}>
@@ -127,6 +127,10 @@ Uses classes to animate transitions. The only parameter is an object containing 
 ```
 
 ## Changelog
+
+### 0.5.7
+
+- Revert change in 0.5.6, as it had unintended side effects.
 
 ### 0.5.6
 
