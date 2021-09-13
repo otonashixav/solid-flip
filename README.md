@@ -46,7 +46,7 @@ The `Transition` component should wrap HTML and SVG elements to be transitioned.
 
 ### Props
 
-The `Transition` component takes three props: `enter`, `exit`, and `move`. These accept functions that take an array of elements which need to be transitioned, figure out what changes to make (if needed), then return a callback containing all changes to be made. The `exit` prop additionally takes a `removeElements` function which should be called when it is done removing elements.
+The `Transition` component takes five props, including `children`. Three of these control how transitions happen: `enter`, `exit`, and `move`. These accept functions that take an array of elements which need to be transitioned, figure out what changes to make (if needed), then return a callback containing all changes to be made. The `exit` prop additionally takes a `removeElements` function which should be called when it is done removing elements.
 
 ## Helper Functions
 
@@ -58,14 +58,11 @@ Uses `element.animate` to animate transitions. Takes the same parameters as `ele
 
 #### animateEnter
 
-Takes one additional option, `skipInitial`, defaulting to true, which skips the initial enter transition.
-
 ```tsx
 <Transition
   enter={animateEnter(
     { opacity: [0, 1] },
-    { duration: 300, easing: "ease", fill: "backwards" },
-    { skipInitial: true }
+    { duration: 300, easing: "ease", fill: "backwards" }
   )}
 >
   ...
@@ -74,7 +71,7 @@ Takes one additional option, `skipInitial`, defaulting to true, which skips the 
 
 #### animateExit
 
-Takes one additional option, `fixPosition`, defaulting to false, which sets the `position` proeprty of exiting elements to `absolute`, removes margins, and fixes `left, top, width, height` such that the exiting element is removed from the document flow without changes to how it renders.
+Takes one additional option, `fixPosition`, defaulting to false, which sets the `position` proeprty of exiting elements to `absolute`, removes margins, and fixes `left, top, width, height` such that the exiting element is removed from the document flow without changes to how it renders. The parent should have `position: relative` for this to work properly.
 
 ```tsx
 <Transition
@@ -109,14 +106,11 @@ Uses classes to animate transitions. The only parameter is an object containing 
 
 ```tsx
 <Transition
-  enter={cssEnter(
-    {
-      from: "opacity-0",
-      active: "duration-300",
-      name: "my-list",
-    },
-    { skipInitial: true }
-  )}
+  enter={cssEnter({
+    from: "opacity-0",
+    active: "duration-300",
+    name: "my-list",
+  })}
   exit={cssExit(
     { to: "opacity-0", active: "duration-300", name: "my-list" },
     { fixPosition: false }
@@ -126,7 +120,19 @@ Uses classes to animate transitions. The only parameter is an object containing 
 </Transition>
 ```
 
+### filterMoved
+
+Accepts an array of elements which may move (passed in by `Transition` when elements are added or removed), and a function for animating their movement. Useful for specifying your own version of `animateMove` if needed.
+
+### fixPositions
+
+Accepts an array of elements to be removed. Returns a function which when called, applies the required changes to fix those elements in place. The parent should have `position: relative` for this to work properly.
+
 ## Changelog
+
+### 0.6.0
+
+- Make `Transition` props reactive between transitions, fixing [#2](https://github.com/otonashixav/solid-flip/issues/2). Moved `skipInitial` to a prop on `Transition`, `initial`, which specifies whether to enter the initial children. `fixPosition` accepts only `true` now, since the default is `false` and will remain so.
 
 ### 0.5.7
 
