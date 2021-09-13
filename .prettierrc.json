@@ -1,13 +1,13 @@
 {
-	"tabWidth": 4,
-	"overrides": [
-		{
-			"files": [
-				"*.md"
-			],
-			"options": {
-				"tabWidth": 2
-			}
-		}
-	]
+    "tabWidth": 4,
+    "overrides": [
+        {
+            "files": [
+                "*.md"
+            ],
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
 }

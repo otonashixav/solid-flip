@@ -13,21 +13,35 @@ import {
     StylableElement,
 } from "./types";
 
+function resolvedToEls(resolved: JSX.Element) {
+    return (Array.isArray(resolved) ? resolved : [resolved]).filter(
+        (el) => el instanceof Element
+    ) as StylableElement[];
+}
+
 export function Transition(props: {
     children: JSX.Element;
     move?: MoveFunction;
     enter?: EnterFunction;
     exit?: ExitFunction;
+    initial?: JSX.Element;
 }): JSX.Element {
-    const { move, enter, exit } = props;
-    const getResolved = children(() => props.children);
-    const [getEls, setEls] = createSignal<StylableElement[]>([]);
+    let move: MoveFunction | undefined,
+        enter: EnterFunction | undefined,
+        exit: ExitFunction | undefined;
+    createRenderEffect(() => (move = props.move));
+    createRenderEffect(() => (enter = props.enter));
+    createRenderEffect(() => (exit = props.exit));
+
+    const getChildren = children(() => props.children);
+    const getInitial = children(() => props.initial);
+
+    const [getEls, setEls] = createSignal<StylableElement[]>(
+        resolvedToEls(props.initial ? getInitial() : getChildren())
+    );
 
     createRenderEffect((prevSet: Set<StylableElement>) => {
-        const resolved = getResolved();
-        const els = (Array.isArray(resolved) ? resolved : [resolved]).filter(
-            (el) => el instanceof Element
-        ) as StylableElement[];
+        const els = resolvedToEls(getChildren());
         const currSet = new Set(els);
         const prevEls = untrack(getEls);
 
