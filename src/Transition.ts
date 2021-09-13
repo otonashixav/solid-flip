@@ -24,7 +24,7 @@ export function Transition(props: {
     move?: MoveFunction;
     enter?: EnterFunction;
     exit?: ExitFunction;
-    initial?: JSX.Element;
+    initial?: true;
 }): JSX.Element {
     let move: MoveFunction | undefined,
         enter: EnterFunction | undefined,
@@ -33,15 +33,21 @@ export function Transition(props: {
     createRenderEffect(() => (enter = props.enter));
     createRenderEffect(() => (exit = props.exit));
 
-    const getChildren = children(() => props.children);
-    const getInitial = children(() => props.initial);
+    const enterInitial = props.initial;
 
+    const getResolved = children(() => props.children);
     const [getEls, setEls] = createSignal<StylableElement[]>(
-        resolvedToEls(props.initial ? getInitial() : getChildren())
+        enterInitial ? [] : resolvedToEls(getResolved())
     );
 
+    let isInitial = true;
     createRenderEffect((prevSet: Set<StylableElement>) => {
-        const els = resolvedToEls(getChildren());
+        const resolved = getResolved();
+        if (isInitial) {
+            isInitial = false;
+            if (!enterInitial) return prevSet;
+        }
+        const els = resolvedToEls(resolved);
         const currSet = new Set(els);
         const prevEls = untrack(getEls);
 
@@ -87,7 +93,7 @@ export function Transition(props: {
             });
 
         return currSet;
-    }, new Set());
+    }, new Set(getEls()));
 
     return getEls;
 }

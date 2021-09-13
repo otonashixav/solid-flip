@@ -9,10 +9,12 @@ export function filterMoved(
     els: StylableElement[],
     move: (movedEls: [StylableElement, number, number][]) => void
 ): () => void {
-    const movedEls = els.map((el) => {
-        const { x, y } = el.getBoundingClientRect();
-        return [el, x, y] as [StylableElement, number, number];
-    });
+    const movedEls = els
+        .filter((el) => el.isConnected)
+        .map((el) => {
+            const { x, y } = el.getBoundingClientRect();
+            return [el, x, y] as [StylableElement, number, number];
+        });
     return () => {
         let i = movedEls.length;
         while (i--) {
@@ -81,22 +83,15 @@ export function animateEnter(
     keyframes: Keyframe[] | PropertyIndexedKeyframes | null = {
         opacity: [0, 1],
     },
-    animationOptions?: KeyframeAnimationOptions,
-    options: {
-        skipInitial?: boolean;
-    } = {}
+    animationOptions?: KeyframeAnimationOptions
 ): EnterFunction {
-    let { skipInitial = true } = options;
-    return (els) =>
-        skipInitial
-            ? void (skipInitial = false)
-            : () =>
-                  els.forEach((el) =>
-                      el.animate(keyframes, {
-                          ...DEFAULT_OPTIONS,
-                          ...animationOptions,
-                      })
-                  );
+    return (els) => () =>
+        els.forEach((el) =>
+            el.animate(keyframes, {
+                ...DEFAULT_OPTIONS,
+                ...animationOptions,
+            })
+        );
 }
 
 export function animateExit(
@@ -122,18 +117,12 @@ export function animateExit(
     };
 }
 
-export function cssEnter(
-    classes: {
-        name?: string;
-        from?: string;
-        to?: string;
-        active?: string;
-    },
-    options: {
-        skipInitial?: boolean;
-    } = {}
-): EnterFunction {
-    let { skipInitial = true } = options;
+export function cssEnter(classes: {
+    name?: string;
+    from?: string;
+    to?: string;
+    active?: string;
+}): EnterFunction {
     const fromClasses = classes.from?.split(" ") ?? [];
     const toClasses = classes.to?.split(" ") ?? [];
     const activeClasses = classes.active?.split(" ") ?? [];
@@ -145,10 +134,6 @@ export function cssEnter(
     }
 
     return (els) => {
-        if (skipInitial) {
-            skipInitial = false;
-            return;
-        }
         els.forEach((el) => el.classList.add(...fromClasses, ...activeClasses));
         return () =>
             requestAnimationFrame(() =>
