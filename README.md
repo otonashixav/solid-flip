@@ -46,7 +46,11 @@ The `Transition` component should wrap HTML and SVG elements to be transitioned.
 
 ### Props
 
-The `Transition` component takes five props, including `children`. Three of these control how transitions happen: `enter`, `exit`, and `move`. These accept functions that take an array of elements which need to be transitioned, figure out what changes to make (if needed), then return a callback containing all changes to be made. The `exit` prop additionally takes a `removeElements` function which should be called when it is done removing elements.
+The `Transition` component takes four props.
+
+Three of these control how transitions happen: `enter`, `exit`, and `move`. These accept functions that take an array of elements which need to be transitioned, figure out what changes to make (if needed), then return a callback containing all changes to be made. The `exit` prop additionally takes a `removeElements` function which should be called when it is done removing elements.
+
+The `initial` prop controls whether or not the initial contents of the `Transition` should be entered when initially rendered.
 
 ## Helper Functions
 
