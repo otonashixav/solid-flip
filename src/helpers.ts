@@ -9,12 +9,13 @@ export function filterMoved(
     els: StylableElement[],
     move: (movedEls: [StylableElement, number, number][]) => void
 ): () => void {
-    const movedEls = els
-        .filter((el) => el.isConnected)
-        .map((el) => {
+    const movedEls: [StylableElement, number, number][] = [];
+    els.forEach((el) => {
+        if (el.isConnected) {
             const { x, y } = el.getBoundingClientRect();
-            return [el, x, y] as [StylableElement, number, number];
-        });
+            movedEls.push([el, x, y]);
+        }
+    });
     return () => {
         let i = movedEls.length;
         while (i--) {
@@ -99,13 +100,13 @@ export function animateExit(
         opacity: [1, 0],
     },
     animationOptions?: KeyframeAnimationOptions,
-    options: { fixPosition?: boolean } = {}
+    options: { fixPosition?: true } = {}
 ): ExitFunction {
     const { fixPosition } = options;
     return (els, done) => {
         const setAbsolute = fixPosition && fixPositions(els);
         return () => {
-            fixPosition && (setAbsolute as () => void)();
+            setAbsolute?.();
             els.forEach((el, i) => {
                 const finished = el.animate(keyframes, {
                     ...DEFAULT_OPTIONS,
@@ -162,7 +163,7 @@ export function cssExit(
         active?: string;
     },
     options: {
-        fixPosition?: boolean;
+        fixPosition?: true;
     } = {}
 ): ExitFunction {
     let { fixPosition } = options;
@@ -183,7 +184,7 @@ export function cssExit(
             el.classList.add(...fromClasses, ...activeClasses);
         });
         return () => {
-            fixPosition && (setAbsolute as () => void)();
+            setAbsolute?.();
             els.forEach((el, i) => {
                 el.classList.remove(...fromClasses);
                 el.classList.add(...toClasses);
