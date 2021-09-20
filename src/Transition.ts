@@ -60,11 +60,10 @@ export function Transition(props: {
     if (exit) {
       const exitingSet = prevSet;
       exitingSet.forEach((el) => currSet.has(el) && exitingSet.delete(el));
+      prevEls.forEach(
+        (el, index) => currSet.has(el) || els.splice(index, 0, el)
+      );
       if (exitingSet.size) {
-        prevEls.forEach(
-          (el, index) => currSet.has(el) || els.splice(index, 0, el)
-        );
-
         removeEls = () =>
           setEls((els) => {
             const nextEls = els.filter((el) => !exitingSet.has(el));
