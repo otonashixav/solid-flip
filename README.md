@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=-2064983271&version=1.1.4)
+[Playground Link](https://playground.solidjs.com/?hash=1587325276&version=1.1.4)
 
 ```tsx
 <Transition enter={animateEnter()} exit={animateExit()} move={animateMove()}>
@@ -133,6 +133,14 @@ Accepts an array of elements which may move (passed in by `Transition` when elem
 Accepts an array of elements to be removed. Returns a function which when called, applies the required changes to fix those elements in place. The parent should have `position: relative` for this to work properly.
 
 ## Changelog
+
+### 0.6.3
+
+- Fixed playground link
+
+### 0.6.2
+
+- Accidentally bumped the version number.
 
 ### 0.6.1
 
