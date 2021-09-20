@@ -1,12 +1,10 @@
 type OneOrOther<U, V> = {
   [K in keyof U]?: U[K];
-} &
-  {
-    [K in keyof V]?: V[K];
-  } &
-  {
-    [K in keyof (U | V)]: U[K] | V[K];
-  };
+} & {
+  [K in keyof V]?: V[K];
+} & {
+  [K in keyof (U | V)]: U[K] | V[K];
+};
 
 export type StylableElement = OneOrOther<HTMLElement, SVGElement>;
 export type MoveFunction = (

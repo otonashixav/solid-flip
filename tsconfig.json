@@ -1,19 +1,15 @@
 {
-    "compilerOptions": {
-        "declaration": true,
-        "target": "ES6",
-        "module": "ES6",
-        "moduleResolution": "node",
-        "strict": true,
-        "jsx": "preserve",
-        "jsxImportSource": "solid-js",
-        "preserveSymlinks": true,
-        "outDir": "./dist"
-    },
-    "include": [
-        "./src"
-    ],
-    "exclude": [
-        "node_modules/"
-    ]
+  "compilerOptions": {
+    "declaration": true,
+    "target": "ES6",
+    "module": "ES6",
+    "moduleResolution": "node",
+    "strict": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "preserveSymlinks": true,
+    "outDir": "./dist"
+  },
+  "include": ["./src"],
+  "exclude": ["node_modules/"]
 }
