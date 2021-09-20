@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=1587325276&version=1.1.4)
+[Playground Link](https://playground.solidjs.com/?hash=-607382427&version=1.1.4)
 
 ```tsx
 <Transition enter={animateEnter()} exit={animateExit()} move={animateMove()}>
@@ -134,9 +134,13 @@ Accepts an array of elements to be removed. Returns a function which when called
 
 ## Changelog
 
+### 0.6.4
+
+- Actually apply the fix in 0.6.1.
+
 ### 0.6.3
 
-- Fixed playground link
+- Fixed playground link.
 
 ### 0.6.2
 
