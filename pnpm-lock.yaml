@@ -4,18 +4,18 @@ specifiers:
   '@babel/core': ^7.15.5
   '@babel/preset-typescript': ^7.15.0
   prettier: ^2.4.1
-  rollup: ^2.56.3
+  rollup: ^2.57.0
   rollup-preset-solid: ^1.0.1
-  solid-js: ^1.1.4
+  solid-js: ^1.1.5
   typescript: ^4.4.3
 
 devDependencies:
   '@babel/core': 7.15.5
   '@babel/preset-typescript': 7.15.0_@babel+core@7.15.5
   prettier: 2.4.1
-  rollup: 2.56.3
+  rollup: 2.57.0
   rollup-preset-solid: 1.0.1
-  solid-js: 1.1.4
+  solid-js: 1.1.5
   typescript: 4.4.3
 
 packages:
@@ -1012,8 +1012,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /rollup/2.56.3:
-    resolution: {integrity: sha512-Au92NuznFklgQCUcV96iXlxUbHuB1vQMaH76DHl5M11TotjOHwqk9CwcrT78+Tnv4FN9uTBxq6p4EJoYkpyekg==}
+  /rollup/2.57.0:
+    resolution: {integrity: sha512-bKQIh1rWKofRee6mv8SrF2HdP6pea5QkwBZSMImJysFj39gQuiV8MEPBjXOCpzk3wSYp63M2v2wkWBmFC8O/rg==}
     engines: {node: '>=10.0.0'}
     hasBin: true
     optionalDependencies:
@@ -1039,8 +1039,8 @@ packages:
       randombytes: 2.1.0
     dev: true
 
-  /solid-js/1.1.4:
-    resolution: {integrity: sha512-u3rvemWTQQ1ab9YrrRR+bUi7Daq5ZRVlR6gEDsHrRYC5uYFkFGGRt/ibjo+OsBxjbPRxGzy7jel3mfTZiiuNzA==}
+  /solid-js/1.1.5:
+    resolution: {integrity: sha512-cwMNe1U/1bqCTMco2za6LDU66jDn/57m5kfrDUhW3ls9YIbaREdktqPFGULrill22qyoFDngEg5hgm6a6vf6wg==}
     dev: true
 
   /source-map-support/0.5.19:
