@@ -54,9 +54,10 @@ export function animateEnter(
   }
 
   const animateEl = animate;
-  return (els) => {
-    for (const el of els) animateEl(el);
-  };
+  return (els) =>
+    requestAnimationFrame(() => {
+      for (const el of els) animateEl(el);
+    });
 }
 
 const DEFAULT_EXIT_KEYFRAMES: KeyframeType = {
@@ -99,9 +100,12 @@ export function animateExit(
 
   return (els, removeEls) => {
     if (detach) detachEls(els);
-    if (!separate)
+    if (separate) {
+      for (const el of els) animateEl(el).then(() => removeEls(el));
+    } else {
       animateEl(els.shift() as StylableElement).then(() => removeEls());
-    for (const el of els) animateEl(el).then(() => removeEls(el));
+      for (const el of els) animateEl(el);
+    }
   };
 }
 
@@ -186,7 +190,7 @@ export function cssEnter(
   } = {}
 ): EnterIntegration {
   const enter = cssIntegration("enter", classes, options);
-  return enter;
+  return (els) => requestAnimationFrame(() => enter(els));
 }
 
 export function cssExit(

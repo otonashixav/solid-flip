@@ -43,11 +43,15 @@ export function detachEls(els: StylableElement[]): void {
       });
     }
   }
-
-  for (const { el, ...offsets } of detachableEls) {
-    el.style.setProperty("position", "absolute");
-    el.style.setProperty("margin", "0px");
-    for (const name in offsets)
-      el.style.setProperty(name, `${offsets[name as keyof typeof offsets]}px`);
-  }
+  requestAnimationFrame(() => {
+    for (const { el, ...offsets } of detachableEls) {
+      el.style.setProperty("position", "absolute");
+      el.style.setProperty("margin", "0px");
+      for (const name in offsets)
+        el.style.setProperty(
+          name,
+          `${offsets[name as keyof typeof offsets]}px`
+        );
+    }
+  });
 }

@@ -47,13 +47,9 @@ export const TransitionGroup: Component<TransitionProps> = (props) => {
     const elSet = new Set(els);
     const prevEls = untrack(getEls);
 
-    move && prevEls.length && move(prevEls);
-
     if (enter) {
-      // Wait for the elements to be mounted before calling enter
-      const enter_ = enter;
       const enteringEls = els.filter((el) => !prevElSet.has(el));
-      enteringEls.length && requestAnimationFrame(() => enter_(enteringEls));
+      enteringEls.length && enter(enteringEls);
     }
 
     if (exit) {
@@ -68,17 +64,24 @@ export const TransitionGroup: Component<TransitionProps> = (props) => {
         const exitingEls = [...exitingElSet];
         const removeEls = (removedEl?: StylableElement) => {
           setEls((els) => {
-            move && els.length && move(els);
-            return els.filter((el) =>
+            const nextEls = els.filter((el) =>
               removedEl === undefined ? !exitingElSet.has(el) : el !== removedEl
             );
+            move && nextEls.length && move(nextEls);
+            return nextEls;
           });
         };
         exit(exitingEls, removeEls);
       }
     }
 
+    if (move) {
+      const movingEls = prevEls;
+      movingEls.length && move(movingEls);
+    }
+
     setEls(els);
+
     return elSet;
   }, new Set(getEls()));
 
