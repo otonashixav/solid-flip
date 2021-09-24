@@ -18,29 +18,27 @@ interface TransitionProps {
   move?: MoveIntegration;
   enter?: EnterIntegration;
   exit?: ExitIntegration | ExitIntegration;
-  initial?: true;
+  initial?: true | EnterIntegration;
 }
 
 export const TransitionGroup: Component<TransitionProps> = (props) => {
+  const enterInitial = props.initial;
   let { move, enter, exit } = {} as TransitionProps;
   createRenderEffect(() => (move = props.move));
   createRenderEffect(() => (enter = props.enter));
   createRenderEffect(() => (exit = props.exit));
 
-  const enterInitial = props.initial;
-
   const getResolved = children(() => props.children);
-  const [getEls, setEls] = createSignal(
-    enterInitial ? [] : resolvedToEls(getResolved())
-  );
+  const [getEls, setEls] = createSignal(resolvedToEls(getResolved()));
+  if (typeof enterInitial === "function") enterInitial(getEls());
+  else if (enterInitial === true && enter) enter(getEls());
 
   let isInitial = true;
   createRenderEffect((prevElSet: Set<StylableElement>) => {
     const resolved = getResolved();
-
     if (isInitial) {
       isInitial = false;
-      if (!enterInitial) return prevElSet;
+      return prevElSet;
     }
 
     const els = resolvedToEls(resolved);
