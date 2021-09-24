@@ -58,10 +58,11 @@ export const TransitionGroup: Component<TransitionProps> = (props) => {
 
     if (exit) {
       // Modify prevElSet in place since we have no more use for it
-      prevElSet.forEach((el) => elSet.has(el) && prevElSet.delete(el));
+      for (const el of prevElSet) elSet.has(el) && prevElSet.delete(el);
       const exitingElSet = prevElSet;
       // Persist previous els; they will be removed by removeEls
-      prevEls.forEach((el, i) => !elSet.has(el) && els.splice(i, 0, el));
+      for (let i = 0; i < prevEls.length; i++)
+        !elSet.has(prevEls[i]) && els.splice(i, 0, prevEls[i]);
       if (exitingElSet.size) {
         // We have els exiting
         const exitingEls = [...exitingElSet];
@@ -73,7 +74,6 @@ export const TransitionGroup: Component<TransitionProps> = (props) => {
             );
           });
         };
-
         exit(exitingEls, removeEls);
       }
     }

@@ -31,9 +31,9 @@ export function animateMove(
 
   const animateEl = animate;
   return (els) => {
-    filterMovedEls(els).then((movedEls) =>
-      movedEls.forEach((movedEl) => animateEl(...movedEl))
-    );
+    filterMovedEls(els).then((movedEls) => {
+      for (const [el, x, y] of movedEls) animateEl(el, x, y);
+    });
   };
 }
 
@@ -54,7 +54,9 @@ export function animateEnter(
   }
 
   const animateEl = animate;
-  return (els) => els.forEach(animateEl);
+  return (els) => {
+    for (const el of els) animateEl(el);
+  };
 }
 
 const DEFAULT_EXIT_KEYFRAMES: KeyframeType = {
@@ -97,21 +99,18 @@ export function animateExit(
 
   return (els, removeEls) => {
     if (detach) detachEls(els);
-    if (separate) {
-      els.forEach((el) => animateEl(el).then(() => removeEls(el)));
-    } else {
-      animateEl(els[0]).then(() => removeEls());
-      for (let i = 1; i < els.length; i++) animateEl(els[i]);
-    }
+    if (!separate)
+      animateEl(els.shift() as StylableElement).then(() => removeEls());
+    for (const el of els) animateEl(el).then(() => removeEls(el));
   };
 }
 
 function addClasses(els: StylableElement[], ...classes: string[]) {
-  els.forEach((el) => el.classList.add(...classes));
+  for (const el of els) el.classList.add(...classes);
 }
 
 function removeClasses(els: StylableElement[], ...classes: string[]) {
-  els.forEach((el) => el.classList.remove(...classes));
+  for (const el of els) el.classList.remove(...classes);
 }
 
 function cssIntegration(
