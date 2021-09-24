@@ -7,5 +7,5 @@ type MoveIntegration = (allElements: StylableElement[]) => void;
 type EnterIntegration = (enteringElements: StylableElement[]) => void;
 type ExitIntegration = (
   exitingElements: StylableElement[],
-  removeElements: (index?: number) => void
+  removeElements: (exitingElement?: StylableElement) => void
 ) => void;

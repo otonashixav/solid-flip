@@ -34,8 +34,6 @@ export const TransitionGroup: Component<TransitionProps> = (props) => {
     enterInitial ? [] : resolvedToEls(getResolved())
   );
 
-  const flip = () => move?.(untrack(getEls));
-
   let isInitial = true;
   createRenderEffect((prevElSet: Set<StylableElement>) => {
     const resolved = getResolved();
@@ -47,14 +45,15 @@ export const TransitionGroup: Component<TransitionProps> = (props) => {
 
     const els = resolvedToEls(resolved);
     const elSet = new Set(els);
+    const prevEls = untrack(getEls);
 
-    flip();
+    move && prevEls.length && move(prevEls);
 
     if (enter) {
       // Wait for the elements to be mounted before calling enter
       const enter_ = enter;
       const enteringEls = els.filter((el) => !prevElSet.has(el));
-      requestAnimationFrame(() => enter_(enteringEls));
+      enteringEls.length && requestAnimationFrame(() => enter_(enteringEls));
     }
 
     if (exit) {
@@ -62,21 +61,17 @@ export const TransitionGroup: Component<TransitionProps> = (props) => {
       prevElSet.forEach((el) => elSet.has(el) && prevElSet.delete(el));
       const exitingElSet = prevElSet;
       // Persist previous els; they will be removed by removeEls
-      untrack(getEls).forEach(
-        (el, i) => !elSet.has(el) && els.splice(i, 0, el)
-      );
+      prevEls.forEach((el, i) => !elSet.has(el) && els.splice(i, 0, el));
       if (exitingElSet.size) {
         // We have els exiting
         const exitingEls = [...exitingElSet];
-        const removeEls = (index?: number) => {
-          flip();
-          setEls((els) =>
-            els.filter((el) =>
-              index !== undefined
-                ? el !== exitingEls[index]
-                : !exitingElSet.has(el)
-            )
-          );
+        const removeEls = (removedEl?: StylableElement) => {
+          setEls((els) => {
+            move && els.length && move(els);
+            return els.filter((el) =>
+              removedEl === undefined ? !exitingElSet.has(el) : el !== removedEl
+            );
+          });
         };
 
         exit(exitingEls, removeEls);

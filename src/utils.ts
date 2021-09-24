@@ -12,6 +12,7 @@ export function filterMovedEls(
     requestAnimationFrame(() => {
       const movedEls: MovedElement[] = [];
       for (const [el, prevX, prevY] of allEls) {
+        if (!el.isConnected) break;
         const { x, y } = el.getBoundingClientRect();
         const dX = prevX - x;
         const dY = prevY - y;

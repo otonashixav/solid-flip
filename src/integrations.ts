@@ -1,6 +1,4 @@
-import { detachEls, filterMovedEls } from ".";
-
-type KeyframeType = Keyframe[] | PropertyIndexedKeyframes;
+import { detachEls, filterMovedEls } from "./utils";
 
 const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
   duration: 300,
@@ -32,8 +30,10 @@ export function animateMove(
   }
 
   const animateEl = animate;
-  return async (els) => {
-    (await filterMovedEls(els)).forEach((movedEl) => animateEl(...movedEl));
+  return (els) => {
+    filterMovedEls(els).then((movedEls) =>
+      movedEls.forEach((movedEl) => animateEl(...movedEl))
+    );
   };
 }
 
@@ -95,14 +95,12 @@ export function animateExit(
     return animate_(el);
   };
 
-  return (els, done) => {
+  return (els, removeEls) => {
     if (detach) detachEls(els);
     if (separate) {
-      els.forEach((el, i) => {
-        animateEl(el).then(() => done(i));
-      });
+      els.forEach((el) => animateEl(el).then(() => removeEls(el)));
     } else {
-      animateEl(els[0]).then(() => done());
+      animateEl(els[0]).then(() => removeEls());
       for (let i = 1; i < els.length; i++) animateEl(els[i]);
     }
   };
@@ -117,6 +115,7 @@ function removeClasses(els: StylableElement[], ...classes: string[]) {
 }
 
 function cssIntegration(
+  integrationType: "enter" | "exit",
   classes: {
     name?: string;
     from?: string;
@@ -125,34 +124,51 @@ function cssIntegration(
   },
   options: {
     separate?: boolean;
-    type?: "animationend" | "transitionend" | "animationend transitionend";
+    type?: "animationend" | "transitionend" | "both";
   }
-): (els: StylableElement[], removeElements?: (index?: number) => void) => void {
-  const { separate, type = "animationend transitionend" } = options;
+): (
+  els: StylableElement[],
+  removeElements?: (el?: StylableElement) => void
+) => void {
+  const { separate, type = "both" } = options;
   const name = classes.name ?? "s";
-  const fromClasses = (classes.from?.split(" ") ?? []).concat(name);
-  const activeClasses = (classes.active?.split(" ") ?? []).concat(name);
-  const toClasses = (classes.to?.split(" ") ?? []).concat(name);
+  const fromClasses = (classes.from?.split(" ") ?? []).concat(
+    `${name}-${integrationType}-from`
+  );
+  const activeClasses = (classes.active?.split(" ") ?? []).concat(
+    `${name}-${integrationType}-active`
+  );
+  const toClasses = (classes.to?.split(" ") ?? []).concat(
+    `${name}-${integrationType}-to`
+  );
 
-  return (els, onDone) => {
+  return (els, removeEls) => {
     addClasses(els, ...fromClasses, ...activeClasses);
     requestAnimationFrame(() => {
       removeClasses(els, ...fromClasses);
       addClasses(els, ...toClasses);
-      const getEventHandler = (el: StylableElement, ...i: [number?]) => {
-        const handleEvent = ({ target, currentTarget }: Event) => {
-          if (currentTarget === null || target !== currentTarget) return;
-          onDone ? onDone(...i) : el.classList.remove(...activeClasses);
-          currentTarget.removeEventListener(type, handleEvent);
+      const registerEventHandler = (el: StylableElement) => {
+        const handleEvent = ({ currentTarget }: Event) => {
+          if (currentTarget !== el) return;
+          removeEls
+            ? separate
+              ? removeEls(el)
+              : removeEls()
+            : separate
+            ? el.classList.remove(...activeClasses)
+            : removeClasses(els, ...activeClasses);
+          if (type === "both") {
+            el.removeEventListener("transitionend", handleEvent);
+            el.removeEventListener("animationend", handleEvent);
+          } else el.removeEventListener(type, handleEvent);
         };
-        return handleEvent;
+        if (type === "both") {
+          el.addEventListener("transitionend", handleEvent);
+          el.addEventListener("animationend", handleEvent);
+        } else el.addEventListener(type, handleEvent);
       };
-      if (separate) {
-        els.forEach((el, i) => {
-          el.addEventListener(type, getEventHandler(el, i));
-        });
-      } else {
-        els[0].addEventListener(type, getEventHandler(els[0]));
+      for (let i = 0; i < (separate ? els.length : 1); i++) {
+        registerEventHandler(els[i]);
       }
     });
   };
@@ -167,10 +183,11 @@ export function cssEnter(
   },
   options: {
     separate?: boolean;
-    type?: "animationend" | "transitionend" | "animationend transitionend";
+    type?: "animationend" | "transitionend" | "both";
   } = {}
 ): EnterIntegration {
-  return cssIntegration(classes, options);
+  const enter = cssIntegration("enter", classes, options);
+  return enter;
 }
 
 export function cssExit(
@@ -181,9 +198,15 @@ export function cssExit(
     to?: string;
   },
   options: {
+    detach?: boolean;
     separate?: boolean;
-    type?: "animationend" | "transitionend" | "animationend transitionend";
+    type?: "animationend" | "transitionend" | "both";
   } = {}
 ): ExitIntegration {
-  return cssIntegration(classes, options);
+  const { detach, ...integrationOptions } = options;
+  const exit = cssIntegration("exit", classes, integrationOptions);
+  return (els, removeEls) => {
+    detach && detachEls(els);
+    exit(els, removeEls);
+  };
 }
