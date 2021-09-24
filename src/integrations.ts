@@ -147,33 +147,37 @@ function cssIntegration(
 
   return (els, removeEls) => {
     addClasses(els, ...fromClasses, ...activeClasses);
-    requestAnimationFrame(() => {
-      removeClasses(els, ...fromClasses);
-      addClasses(els, ...toClasses);
-      const registerEventHandler = (el: StylableElement) => {
-        const handleEvent = ({ currentTarget }: Event) => {
-          if (currentTarget !== el) return;
-          removeEls
-            ? separate
-              ? removeEls(el)
-              : removeEls()
-            : separate
-            ? el.classList.remove(...activeClasses)
-            : removeClasses(els, ...activeClasses);
+    (integrationType === "enter"
+      ? requestAnimationFrame
+      : (fn: () => void) => fn())(() =>
+      requestAnimationFrame(() => {
+        removeClasses(els, ...fromClasses);
+        addClasses(els, ...toClasses);
+        const registerEventHandler = (el: StylableElement) => {
+          const handleEvent = ({ currentTarget }: Event) => {
+            if (currentTarget !== el) return;
+            removeEls
+              ? separate
+                ? removeEls(el)
+                : removeEls()
+              : separate
+              ? el.classList.remove(...activeClasses)
+              : removeClasses(els, ...activeClasses);
+            if (type === "both") {
+              el.removeEventListener("transitionend", handleEvent);
+              el.removeEventListener("animationend", handleEvent);
+            } else el.removeEventListener(type, handleEvent);
+          };
           if (type === "both") {
-            el.removeEventListener("transitionend", handleEvent);
-            el.removeEventListener("animationend", handleEvent);
-          } else el.removeEventListener(type, handleEvent);
+            el.addEventListener("transitionend", handleEvent);
+            el.addEventListener("animationend", handleEvent);
+          } else el.addEventListener(type, handleEvent);
         };
-        if (type === "both") {
-          el.addEventListener("transitionend", handleEvent);
-          el.addEventListener("animationend", handleEvent);
-        } else el.addEventListener(type, handleEvent);
-      };
-      for (let i = 0; i < (separate ? els.length : 1); i++) {
-        registerEventHandler(els[i]);
-      }
-    });
+        for (let i = 0; i < (separate ? els.length : 1); i++) {
+          registerEventHandler(els[i]);
+        }
+      })
+    );
   };
 }
 
@@ -190,7 +194,7 @@ export function cssEnter(
   } = {}
 ): EnterIntegration {
   const enter = cssIntegration("enter", classes, options);
-  return (els) => requestAnimationFrame(() => enter(els));
+  return enter;
 }
 
 export function cssExit(
