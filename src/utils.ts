@@ -25,20 +25,28 @@ export function filterMovedEls(els: StylableElement[]): MovedElement[] {
 
 export function detachEls(els: StylableElement[]): void {
   const detachableEls: {
-    el: HTMLElement;
+    el: StylableElement;
     left: number;
     top: number;
     width: number;
     height: number;
   }[] = [];
+  let parentX: number | undefined, parentY: number | undefined;
   for (const el of els) {
-    if (el instanceof HTMLElement) {
+    const parent = el.parentElement;
+    if (parent) {
+      const { x, y, width, height } = el.getBoundingClientRect();
+      if (parentX === undefined || parentY === undefined) {
+        const parentRect = parent.getBoundingClientRect();
+        parentX = parentRect.x;
+        parentY = parentRect.y;
+      }
       detachableEls.push({
         el,
-        left: el.offsetLeft,
-        top: el.offsetTop,
-        width: el.offsetWidth,
-        height: el.offsetHeight,
+        left: x - parentX,
+        top: y - parentY,
+        width: width,
+        height: height,
       });
     }
   }
