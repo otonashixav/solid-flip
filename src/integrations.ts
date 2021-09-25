@@ -38,12 +38,12 @@ function animateAllKeyframes(
 
 export function animateMove(
   animate:
-    | ((el: StylableElement, x: number, y: number) => void)
     | {
         getKeyframes?: (x: number, y: number) => KeyframeType;
         extraKeyframesList?: KeyframeType[];
         options?: KeyframeAnimationOptions;
-      } = {}
+      }
+    | ((el: StylableElement, x: number, y: number) => void) = {}
 ): MoveIntegration {
   if (typeof animate === "object") {
     const {
@@ -73,12 +73,12 @@ const DEFAULT_ENTER_KEYFRAMES: KeyframeType = {
 
 export function animateEnter(
   animate:
-    | ((el: StylableElement) => void)
     | {
         keyframes?: KeyframeType;
         extraKeyframesList?: KeyframeType[];
         options?: KeyframeAnimationOptions;
-      } = {}
+      }
+    | ((el: StylableElement) => void) = {}
 ): EnterIntegration {
   if (typeof animate === "object") {
     const {
@@ -109,12 +109,12 @@ const DEFAULT_EXIT_KEYFRAMES: KeyframeType = {
 
 export function animateExit(
   animate:
-    | ((el: StylableElement) => Promise<unknown>)
     | {
         keyframes?: KeyframeType;
         extraKeyframesList?: KeyframeType[];
         options?: KeyframeAnimationOptions;
-      } = {},
+      }
+    | ((el: StylableElement) => Promise<unknown>) = {},
   options: {
     absolute?: boolean;
     reverseEnter?: boolean;
