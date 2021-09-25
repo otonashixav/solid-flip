@@ -21,7 +21,11 @@ pnpm i @otonashixav/solid-flip
 [Playground Link](https://playground.solidjs.com/?hash=-607382427&version=1.1.4)
 
 ```tsx
-<Transition enter={animateEnter()} exit={animateExit()} move={animateMove()}>
+<TransitionGroup
+  enter={animateEnter()}
+  exit={animateExit()}
+  move={animateMove()}
+>
   <For each={list()}>{(item) => <span>{item}</span>}</For>
   <Switch fallback={<span>Fallback Tab</span>}>
     <Match when={number() === 1}>
@@ -37,102 +41,192 @@ pnpm i @otonashixav/solid-flip
       <span>Tab 4</span>
     </Match>
   </Switch>
-</Transition>
+</TransitionGroup>
 ```
 
-## `<Transition>`
+## `<TransitionGroup>`
 
-The `Transition` component should wrap HTML and SVG elements to be transitioned. Note that although top-level SVG child elements are supported, it is ideal to wrap them in a `<div>` or other HTML element. The `Transition` component accepts three props containing the actual transition implementations.
+The `TransitionGroup` component should wrap elements to be transitioned. Only elements with a `style` property implementing `ElementCSSInlineStyle` e.g. HTMLElements and SVGElements are supported.
 
-### Props
+### `props`
 
-The `Transition` component takes four props.
+These are callbacks which if provided, are used to animate child elements as they enter, exit and are reordered. You can either pass your own functions or use the provided integrations.
 
-Three of these control how transitions happen: `enter`, `exit`, and `move`. These accept functions that take an array of elements which need to be transitioned, figure out what changes to make (if needed), then return a callback containing all changes to be made. The `exit` prop additionally takes a `removeElements` function which should be called when it is done removing elements.
+#### `enter`
 
-The `initial` prop controls whether or not the initial contents of the `Transition` should be entered when initially rendered.
+A callback called when elements enter. Accepts an array of entering elements. Used to transition entering elements. If `initial` is defined on the function, it will be called when the `TransitionGroup` component is created if there is no `initial` prop passed in.
 
-## Helper Functions
+#### `exit`
 
-These exist to help compose `enter`, `exit` and `move` handler functions, covering most basic scenarios. You will have to write your own handlers for more complex scenarios.
+A callback called when elements exit. Accepts an array of exiting elements and a callback to remove one or all of them. Used to transition exiting elements.
 
-### animateEnter / animateExit / animateMove
+#### `move`
 
-Uses `element.animate` to animate transitions. Takes the same parameters as `element.animate` (in the case of animateMove, the keyframes should be provided as a function which take two numbers, `x` and `y`, and return the actual keyframes; see the FLIP technique for more details on how to use these values). The third parameter is an object which contains additional options. All parameters are optional, defaulting to a simple fade in/out and linear slide.
+A callback called when children elements are added, removed, or reordered. Accepts an array of all elements. Used to move elements using the FLIP technique.
 
-#### animateEnter
+#### `initial`
 
-```tsx
-<Transition
-  enter={animateEnter(
-    { opacity: [0, 1] },
-    { duration: 300, easing: "ease", fill: "backwards" }
-  )}
->
-  ...
-</Transition>
+A callback called initially when the `TransitionGroup` component is first created. Accepts an array of all initally present elements. Used to apply initial styling. Also accepts a boolean; if true, calls `enter`, and if false, stops `enter.initial` from being called if present.
+
+## Integrations
+
+Helpers that return functions to be passed into `TransitionGroup` as props.
+
+### `animate` Integrations
+
+All of these integrations can be provided with either keyframes and options to be passed to `element.animate` or a callback to manually animate an element.
+
+These animation options are applied by default:
+
+```ts
+const DEFAULT_OPTIONS = {
+  duration: 300,
+  easing: "ease",
+  fill: "backwards",
+};
 ```
 
-#### animateExit
+### `animateEnter`
 
-Takes one additional option, `fixPosition`, defaulting to false, which sets the `position` proeprty of exiting elements to `absolute`, removes margins, and fixes `left, top, width, height` such that the exiting element is removed from the document flow without changes to how it renders. The parent should have `position: relative` for this to work properly.
-
-```tsx
-<Transition
-  exit={animateExit(
-    { opacity: [1, 0] },
-    { duration: 300, easing: "ease", fill: "backwards" },
-    { fixPosition: false }
-  )}
->
-  ...
-</Transition>
+```ts
+function animateEnter(
+  animate:
+    | {
+        keyframes?: KeyframeType;
+        extraKeyframesList?: KeyframeType[];
+        options?: KeyframeAnimationOptions;
+      }
+    | ((el: StylableElement) => void) = {}
+): EnterIntegration;
 ```
 
-#### animateMove
+`keyframes` defaults to a simple fade in animation.
 
-No additional options.
+### `animateExit`
 
-```tsx
-<Transition
-  move={animateMove(
-    (x, y) => ({ transform: [`translate(${x}px,${y}px)`, "none"] }),
-    { duration: 300, easing: "ease", fill: "backwards" }
-  )}
->
-  ...
-</Transition>
+```ts
+function animateExit(
+  animate:
+    | {
+        keyframes?: KeyframeType;
+        extraKeyframesList?: KeyframeType[];
+        options?: KeyframeAnimationOptions;
+      }
+    | ((el: StylableElement) => Promise<unknown>) = {},
+  options: {
+    absolute?: boolean;
+    reverseEnter?: boolean;
+    separate?: boolean;
+  } = {}
+): ExitIntegration;
 ```
 
-### cssEnter / cssExit
+- `animate` must return a Promise if provided with a callback. The elements will be removed once the Promise resolves.
+- `keyframes` defaults to a simple fade out animation.
+- `absolute: true` sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit.
+- `reverseEnter: true` causes the element to exit by reversing any ongoing enter animations instead of exiting with the provided animation. It also sets `separate: true`.
+- `separate: true` causes each element to be removed when its own animation has completed, instead of using a single animation to remove all the elements. This is useful if your animations have different durations, but otherwise less performant.
 
-Uses classes to animate transitions. The only parameter is an object containing four optional properties: `from`, `active`, and `to`, which should each contain a string of classes that should be applied during the first frame of, throughout, and after the first frame of entering and exiting, and `name`, which if provided will be suffixed with `-enter-from`, `-enter-active`, `-enter-to`, and the same with exit, and applied at the respective times as well. `to` classes will remain on the element. Additionally, all elements must have a transition duration set via either active, class or inline style, or have an active class which supplies a css animation, such that either a `transitionend` or `animationend` event is fired once the element has finished the entering or exiting animation or transition.
+### `animateMove`
 
-```tsx
-<Transition
-  enter={cssEnter({
-    from: "opacity-0",
-    active: "duration-300",
-    name: "my-list",
-  })}
-  exit={cssExit(
-    { to: "opacity-0", active: "duration-300", name: "my-list" },
-    { fixPosition: false }
-  )}
->
-  ...
-</Transition>
+```ts
+function animateMove(
+  animate:
+    | {
+        getKeyframes?: (x: number, y: number) => KeyframeType;
+        extraKeyframesList?: KeyframeType[];
+        options?: KeyframeAnimationOptions;
+      }
+    | ((el: StylableElement, x: number, y: number) => void) = {}
+): MoveIntegration;
 ```
 
-### filterMoved
+`getKeyframes` defaults to a simple straight line movement. If providing your own animation, it should move the element from `(x, y)` to `(0, 0)`.
 
-Accepts an array of elements which may move (passed in by `Transition` when elements are added or removed), and a function for animating their movement. Useful for specifying your own version of `animateMove` if needed.
+## Class Integrations
 
-### fixPositions
+These add and remove classes to transition elements. These accept a classes object with these properties:
 
-Accepts an array of elements to be removed. Returns a function which when called, applies the required changes to fix those elements in place. The parent should have `position: relative` for this to work properly.
+- `name` - If provided, also adds an additional class to each of the other three props. For example, when provided to cssEnter, adds `name-enter-from`, `name-enter-active` and `name-enter-to` to the classes.
+- `from` - Classes to add, then remove. This is the starting point for transitioning.
+- `active` - Classes that should be present during the transition. These usually provide css animations.
+- `to` - Classes that are added after the `from` classes are removed, and persist after the transition ends.
+
+They also all accept these options:
+
+- `separate` - Listens to events on all elements, instead of just the first one. Useful if your transitions finish at different times, but otherwise less performant.
+- `type` - The type of events to listen to, indicating the end of the transition. Defaults to `both`.
+
+### cssEnter
+
+```ts
+function cssEnter(
+  classNames: {
+    name?: string;
+    from?: string;
+    active?: string;
+    to?: string;
+  },
+  options: {
+    separate?: boolean;
+    type?: "animationend" | "transitionend" | "both";
+  } = {}
+): EnterIntegration;
+```
+
+### cssExit
+
+```ts
+function cssExit(
+  classes: {
+    name?: string;
+    from?: string;
+    active?: string;
+    to?: string;
+  },
+  options: {
+    absolute?: boolean;
+    separate?: boolean;
+    type?: "animationend" | "transitionend" | "both";
+  } = {}
+): ExitIntegration;
+```
+
+`absolute: true` sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit.
+
+## Utilities
+
+### filterMovedEls
+
+Filters an array of elements to just those which have moved after the DOM updates. Returns an array which will contain these elements after the DOM updates.
+
+### detachEls
+
+Sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit.
+
+### onUpdate
+
+Takes a callback, used to schedule element operations between integrations. When called within an integration, causes the callback passed to be called after the DOM updates.
+
+### onCommit
+
+Takes a callback, used to schedule element operations between integrations. When called within an integration, causes the callback passed to be called after all the integrations have returned. When called within `onUpdate`, causes the callback passed to be called after all `onUpdate` callbacks have been called. Any style changes to elements via any method should be wrapped in an `onCommit`, so that integrations that need to read values from elements read correctly before any changes have been applied.
 
 ## Changelog
+
+### 0.7.0
+
+- Helpers are now called integrations, inspired by `solid-app-router`.
+- Added scheduling to integrations to make it clearer what runs when.
+- `animate` integrations now accept an object for animate parameters instead of taking two parameters for the keyframes and options. They can also accept a callback that animates the element.
+- Added `separate` as an option where applicable, separating removal of elements or classes per element instead of using the first element to remove all elements or classes.
+- Renamed `fixPosition` to `absolute` to make it clearer what it does. It also works on SVG elements now.
+- Renamed the `fixPositions` utility to `detachEls` and `filterMoved` to `filterMovedEls` to make it clearer what they do.
+- Added `type` as an option on css integrations to prevent the wrong type of event from triggering the listener.
+- A custom event is now used to remove enter classes instead of hijacking the `animationend` listener.
+- `StylableElement` is now `Element & ElementCSSInlineStyle` instead of `HTMLElement | SVGElement`.
+- Allowed `initial` to be a callback, and allowed it to be provided via `enter` as well.
+- Added `reverseEnter` to `animateExit`, allowing enter animations to be reversed in causes where it looks cleaner to do so.
 
 ### 0.6.4
 
