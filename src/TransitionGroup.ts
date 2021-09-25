@@ -49,46 +49,46 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
       if (typeof enterInitial === "function") enterInitial(els);
       else if (enterInitial === true && enter) enter(els);
       else if (enter?.initial) enter.initial(els);
-      return elSet;
-    }
+    } else {
+      const prevEls = untrack(getEls);
 
-    const prevEls = untrack(getEls);
+      if (enter) {
+        const enteringEls = els.filter((el) => !prevElSet.has(el));
+        enteringEls.length && enter(enteringEls);
+      }
 
-    if (enter) {
-      const enteringEls = els.filter((el) => !prevElSet.has(el));
-      enteringEls.length && enter(enteringEls);
-    }
+      if (exit) {
+        // Modify prevElSet in place since we have no more use for it
+        for (const el of prevElSet) elSet.has(el) && prevElSet.delete(el);
+        const exitingElSet = prevElSet;
+        // Persist previous els; they will be removed by removeEls
+        for (let i = 0; i < prevEls.length; i++)
+          !elSet.has(prevEls[i]) && els.splice(i, 0, prevEls[i]);
+        if (exitingElSet.size) {
+          // We have els exiting
+          const exitingEls = [...exitingElSet];
+          const removeEls = (removedEl?: StylableElement) => {
+            setEls((prevEls) => {
+              const els = prevEls.filter((el) =>
+                removedEl === undefined
+                  ? !exitingElSet.has(el)
+                  : el !== removedEl
+              );
+              move && els.length && move(els);
+              return els;
+            });
+          };
+          exit(exitingEls, removeEls);
+        }
+      }
 
-    if (exit) {
-      // Modify prevElSet in place since we have no more use for it
-      for (const el of prevElSet) elSet.has(el) && prevElSet.delete(el);
-      const exitingElSet = prevElSet;
-      // Persist previous els; they will be removed by removeEls
-      for (let i = 0; i < prevEls.length; i++)
-        !elSet.has(prevEls[i]) && els.splice(i, 0, prevEls[i]);
-      if (exitingElSet.size) {
-        // We have els exiting
-        const exitingEls = [...exitingElSet];
-        const removeEls = (removedEl?: StylableElement) => {
-          setEls((prevEls) => {
-            const els = prevEls.filter((el) =>
-              removedEl === undefined ? !exitingElSet.has(el) : el !== removedEl
-            );
-            move && els.length && move(els);
-            return els;
-          });
-        };
-        exit(exitingEls, removeEls);
+      if (move) {
+        const movingEls = prevEls;
+        movingEls.length && move(movingEls);
       }
     }
 
-    if (move) {
-      const movingEls = prevEls;
-      movingEls.length && move(movingEls);
-    }
-
     setEls(els);
-
     return elSet;
   }, new Set(getEls()));
 
