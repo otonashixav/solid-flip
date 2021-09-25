@@ -23,22 +23,36 @@ const DEFAULT_MOVE_GET_KEYFRAMES = (x: number, y: number): KeyframeType => ({
   composite: "add",
 });
 
+function animateAllKeyframes(
+  el: Animatable,
+  keyframes: KeyframeType,
+  extraKeyframesList?: KeyframeType[],
+  options?: KeyframeAnimationOptions
+): Animation {
+  const animationOptions = { ...DEFAULT_OPTIONS, ...options };
+  if (extraKeyframesList)
+    for (const extraKeyframes of extraKeyframesList)
+      el.animate(extraKeyframes, animationOptions);
+  return el.animate(keyframes, animationOptions);
+}
+
 export function animateMove(
   animate:
     | ((el: StylableElement, x: number, y: number) => void)
     | {
         getKeyframes?: (x: number, y: number) => KeyframeType;
+        extraKeyframesList?: KeyframeType[];
         options?: KeyframeAnimationOptions;
       } = {}
 ): MoveIntegration {
   if (typeof animate === "object") {
-    const { getKeyframes = DEFAULT_MOVE_GET_KEYFRAMES, options } = animate;
-    const animationOptions = {
-      ...DEFAULT_OPTIONS,
-      ...options,
-    };
+    const {
+      getKeyframes = DEFAULT_MOVE_GET_KEYFRAMES,
+      extraKeyframesList,
+      options,
+    } = animate;
     animate = (el, x, y) => {
-      el.animate(getKeyframes(x, y), animationOptions);
+      animateAllKeyframes(el, getKeyframes(x, y), extraKeyframesList, options);
     };
   }
 
@@ -47,7 +61,7 @@ export function animateMove(
     const movedEls = filterMovedEls(els);
     onUpdate(() =>
       onCommit(() => {
-        for (const [el, x, y] of movedEls) animateEl(el, x, y);
+        for (const movedEl of movedEls) animateEl(...movedEl);
       })
     );
   };
@@ -73,12 +87,10 @@ export function animateEnter(
       options,
     } = animate;
     animate = (el) => {
-      const animationOptions = { ...DEFAULT_OPTIONS, id: "enter", ...options };
-      if (extraKeyframesList)
-        for (const extraKeyframes of extraKeyframesList) {
-          el.animate(extraKeyframes, animationOptions);
-        }
-      el.animate(keyframes, animationOptions);
+      animateAllKeyframes(el, keyframes, extraKeyframesList, {
+        id: "enter",
+        ...options,
+      });
     };
   }
 
@@ -117,11 +129,8 @@ export function animateExit(
       options,
     } = animate;
     animate = (el) => {
-      const animationOptions = { ...DEFAULT_OPTIONS, ...options };
-      if (extraKeyframesList)
-        for (const extraKeyframes of extraKeyframesList)
-          el.animate(extraKeyframes, animationOptions);
-      return el.animate(keyframes, animationOptions).finished;
+      return animateAllKeyframes(el, keyframes, extraKeyframesList, options)
+        .finished;
     };
   }
 
@@ -203,8 +212,8 @@ function cssIntegration(
   const { separate, type = "both" } = options;
   return (els, removeEls) => {
     onCommit(() => {
-      for (const el of els)
-        el.dispatchEvent(new AnimationEvent("animationend"));
+      if (!isEnter)
+        for (const el of els) el.dispatchEvent(new CustomEvent("cssexit"));
       addClasses(els, ...fromClasses, ...activeClasses);
     });
     onUpdate(() =>
@@ -222,11 +231,13 @@ function cssIntegration(
                 : separate
                 ? el.classList.remove(...activeClasses)
                 : removeClasses(els, ...activeClasses);
+              isEnter && el.removeEventListener("cssexit", handleEvent);
               if (type === "both") {
                 el.removeEventListener("transitionend", handleEvent);
                 el.removeEventListener("animationend", handleEvent);
               } else el.removeEventListener(type, handleEvent);
             };
+            isEnter && el.addEventListener("cssexit", handleEvent);
             if (type === "both") {
               el.addEventListener("transitionend", handleEvent);
               el.addEventListener("animationend", handleEvent);
