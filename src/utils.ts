@@ -1,3 +1,5 @@
+import { StylableElement, MovedElement } from "./types";
+
 export function filterMovedEls(
   els: StylableElement[]
 ): Promise<MovedElement[]> {

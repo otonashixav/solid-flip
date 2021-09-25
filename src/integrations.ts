@@ -1,4 +1,15 @@
+import {
+  EnterIntegration,
+  ExitIntegration,
+  KeyframeType,
+  MoveIntegration,
+  StylableElement,
+} from "./types";
 import { detachEls, filterMovedEls } from "./utils";
+
+function run(fn: () => void): void {
+  fn();
+}
 
 const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
   duration: 300,
@@ -72,12 +83,12 @@ export function animateExit(
         options?: KeyframeAnimationOptions;
       } = {},
   options: {
-    detach?: boolean;
+    absolute?: boolean;
     reverseEnter?: boolean;
     separate?: boolean;
   } = {}
 ): ExitIntegration {
-  const { detach, reverseEnter, separate = reverseEnter } = options;
+  const { absolute, reverseEnter, separate = reverseEnter } = options;
   if (typeof animate === "object") {
     const { keyframes = DEFAULT_EXIT_KEYFRAMES, options } = animate;
     animate = (el) =>
@@ -99,7 +110,7 @@ export function animateExit(
   };
 
   return (els, removeEls) => {
-    if (detach) detachEls(els);
+    if (absolute) detachEls(els);
     if (separate) {
       for (const el of els) animateEl(el).then(() => removeEls(el));
     } else {
@@ -117,13 +128,34 @@ function removeClasses(els: StylableElement[], ...classes: string[]) {
   for (const el of els) el.classList.remove(...classes);
 }
 
+function splitClasses(
+  classes: {
+    name?: string | undefined;
+    from?: string | undefined;
+    active?: string | undefined;
+    to?: string | undefined;
+  },
+  integrationType: "enter" | "exit"
+) {
+  const split = (className?: string) => className?.split(" ") ?? [];
+  const fromClasses = split(classes.from);
+  const activeClasses = split(classes.active);
+  const toClasses = split(classes.to);
+  const name = classes.name;
+  if (name) {
+    fromClasses.unshift(`${name}-${integrationType}-from`);
+    activeClasses.unshift(`${name}-${integrationType}-active`);
+    toClasses.unshift(`${name}-${integrationType}-to`);
+  }
+  return { fromClasses, activeClasses, toClasses };
+}
+
 function cssIntegration(
   integrationType: "enter" | "exit",
   classes: {
-    name?: string;
-    from?: string;
-    active?: string;
-    to?: string;
+    fromClasses: string[];
+    activeClasses: string[];
+    toClasses: string[];
   },
   options: {
     separate?: boolean;
@@ -133,23 +165,11 @@ function cssIntegration(
   els: StylableElement[],
   removeElements?: (el?: StylableElement) => void
 ) => void {
+  const { fromClasses, activeClasses, toClasses } = classes;
   const { separate, type = "both" } = options;
-  const name = classes.name ?? "s";
-  const fromClasses = (classes.from?.split(" ") ?? []).concat(
-    `${name}-${integrationType}-from`
-  );
-  const activeClasses = (classes.active?.split(" ") ?? []).concat(
-    `${name}-${integrationType}-active`
-  );
-  const toClasses = (classes.to?.split(" ") ?? []).concat(
-    `${name}-${integrationType}-to`
-  );
-
   return (els, removeEls) => {
     addClasses(els, ...fromClasses, ...activeClasses);
-    (integrationType === "enter"
-      ? requestAnimationFrame
-      : (fn: () => void) => fn())(() =>
+    (integrationType === "enter" ? requestAnimationFrame : run)(() =>
       requestAnimationFrame(() => {
         removeClasses(els, ...fromClasses);
         addClasses(els, ...toClasses);
@@ -173,16 +193,15 @@ function cssIntegration(
             el.addEventListener("animationend", handleEvent);
           } else el.addEventListener(type, handleEvent);
         };
-        for (let i = 0; i < (separate ? els.length : 1); i++) {
-          registerEventHandler(els[i]);
-        }
+        if (separate) for (const el of els) registerEventHandler(el);
+        else registerEventHandler(els[0]);
       })
     );
   };
 }
 
 export function cssEnter(
-  classes: {
+  classNames: {
     name?: string;
     from?: string;
     active?: string;
@@ -193,27 +212,31 @@ export function cssEnter(
     type?: "animationend" | "transitionend" | "both";
   } = {}
 ): EnterIntegration {
+  const classes = splitClasses(classNames, "enter");
   const enter = cssIntegration("enter", classes, options);
-  return enter;
+  return Object.assign(enter, {
+    initial: (els: StylableElement[]) => addClasses(els, ...classes.toClasses),
+  });
 }
 
 export function cssExit(
-  classes: {
+  classNames: {
     name?: string;
     from?: string;
     active?: string;
     to?: string;
   },
   options: {
-    detach?: boolean;
+    absolute?: boolean;
     separate?: boolean;
     type?: "animationend" | "transitionend" | "both";
   } = {}
 ): ExitIntegration {
-  const { detach, ...integrationOptions } = options;
+  const { absolute, ...integrationOptions } = options;
+  const classes = splitClasses(classNames, "exit");
   const exit = cssIntegration("exit", classes, integrationOptions);
   return (els, removeEls) => {
-    detach && detachEls(els);
+    absolute && detachEls(els);
     exit(els, removeEls);
   };
 }

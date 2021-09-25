@@ -6,6 +6,13 @@ import {
   createRenderEffect,
   Component,
 } from "solid-js";
+import {
+  EnterIntegration,
+  ExitIntegration,
+  InitialIntegration,
+  MoveIntegration,
+  StylableElement,
+} from "./types";
 
 function resolvedToEls(resolved: JSX.Element) {
   return (Array.isArray(resolved) ? resolved : [resolved]).filter(
@@ -13,36 +20,38 @@ function resolvedToEls(resolved: JSX.Element) {
   ) as StylableElement[];
 }
 
-interface TransitionProps {
+export interface TransitionGroupProps {
   children: JSX.Element;
   move?: MoveIntegration;
   enter?: EnterIntegration;
   exit?: ExitIntegration | ExitIntegration;
-  initial?: true | EnterIntegration;
+  initial?: true | InitialIntegration;
 }
 
-export const TransitionGroup: Component<TransitionProps> = (props) => {
+export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
   const enterInitial = props.initial;
-  let { move, enter, exit } = {} as TransitionProps;
+  let { move, enter, exit } = {} as TransitionGroupProps;
   createRenderEffect(() => (move = props.move));
   createRenderEffect(() => (enter = props.enter));
   createRenderEffect(() => (exit = props.exit));
 
   const getResolved = children(() => props.children);
-  const [getEls, setEls] = createSignal(resolvedToEls(getResolved()));
-  if (typeof enterInitial === "function") enterInitial(getEls());
-  else if (enterInitial === true && enter) enter(getEls());
+  const [getEls, setEls] = createSignal<StylableElement[]>([]);
 
   let isInitial = true;
   createRenderEffect((prevElSet: Set<StylableElement>) => {
     const resolved = getResolved();
-    if (isInitial) {
-      isInitial = false;
-      return prevElSet;
-    }
-
     const els = resolvedToEls(resolved);
     const elSet = new Set(els);
+
+    if (isInitial) {
+      isInitial = false;
+      if (typeof enterInitial === "function") enterInitial(els);
+      else if (enterInitial === true && enter) enter(els);
+      else if (enter?.initial) enter.initial(els);
+      return elSet;
+    }
+
     const prevEls = untrack(getEls);
 
     if (enter) {
@@ -61,12 +70,12 @@ export const TransitionGroup: Component<TransitionProps> = (props) => {
         // We have els exiting
         const exitingEls = [...exitingElSet];
         const removeEls = (removedEl?: StylableElement) => {
-          setEls((els) => {
-            const nextEls = els.filter((el) =>
+          setEls((prevEls) => {
+            const els = prevEls.filter((el) =>
               removedEl === undefined ? !exitingElSet.has(el) : el !== removedEl
             );
-            move && nextEls.length && move(nextEls);
-            return nextEls;
+            move && els.length && move(els);
+            return els;
           });
         };
         exit(exitingEls, removeEls);
