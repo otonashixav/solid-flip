@@ -194,7 +194,7 @@ function splitClasses(
 }
 
 function cssIntegration(
-  classes: {
+  classLists: {
     fromClasses: string[];
     activeClasses: string[];
     toClasses: string[];
@@ -208,7 +208,7 @@ function cssIntegration(
   els: StylableElement[],
   removeElements?: (el?: StylableElement) => void
 ) => void {
-  const { fromClasses, activeClasses, toClasses } = classes;
+  const { fromClasses, activeClasses, toClasses } = classLists;
   const { separate, type = "both" } = options;
   return (els, removeEls) => {
     onCommit(() => {
@@ -252,7 +252,7 @@ function cssIntegration(
 }
 
 export function cssEnter(
-  classNames: {
+  classes: {
     name?: string;
     from?: string;
     active?: string;
@@ -263,15 +263,16 @@ export function cssEnter(
     type?: "animationend" | "transitionend" | "both";
   } = {}
 ): EnterIntegration {
-  const classes = splitClasses(classNames, true);
-  const enter = cssIntegration(classes, options, true);
+  const classLists = splitClasses(classes, true);
+  const enter = cssIntegration(classLists, options, true);
   return Object.assign(enter, {
-    initial: (els: StylableElement[]) => addClasses(els, ...classes.toClasses),
+    initial: (els: StylableElement[]) =>
+      addClasses(els, ...classLists.toClasses),
   });
 }
 
 export function cssExit(
-  classNames: {
+  classes: {
     name?: string;
     from?: string;
     active?: string;
@@ -284,8 +285,8 @@ export function cssExit(
   } = {}
 ): ExitIntegration {
   const { absolute, ...integrationOptions } = options;
-  const classes = splitClasses(classNames, false);
-  const exit = cssIntegration(classes, integrationOptions, false);
+  const classLists = splitClasses(classes, false);
+  const exit = cssIntegration(classLists, integrationOptions, false);
   return (els, removeEls) => {
     absolute && detachEls(els);
     exit(els, removeEls);
