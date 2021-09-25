@@ -23,10 +23,10 @@ function resolvedToEls(resolved: JSX.Element) {
 
 export interface TransitionGroupProps {
   children: JSX.Element;
-  move?: MoveIntegration;
   enter?: EnterIntegration;
   exit?: ExitIntegration | ExitIntegration;
-  initial?: true | InitialIntegration;
+  move?: MoveIntegration;
+  initial?: boolean | InitialIntegration;
 }
 
 export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
@@ -49,7 +49,7 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
       isInitial = false;
       if (typeof enterInitial === "function") enterInitial(els);
       else if (enterInitial === true && enter) enter(els);
-      else if (enter?.initial) enter.initial(els);
+      else if (enterInitial !== false && enter?.initial) enter.initial(els);
       setEls(els);
     } else
       schedule(requestAnimationFrame, () => {
