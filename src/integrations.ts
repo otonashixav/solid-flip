@@ -33,11 +33,12 @@ export function animateMove(
 ): MoveIntegration {
   if (typeof animate === "object") {
     const { getKeyframes = DEFAULT_MOVE_GET_KEYFRAMES, options } = animate;
+    const animationOptions = {
+      ...DEFAULT_OPTIONS,
+      ...options,
+    };
     animate = (el, x, y) => {
-      el.animate(getKeyframes(x, y), {
-        ...DEFAULT_OPTIONS,
-        ...options,
-      });
+      el.animate(getKeyframes(x, y), animationOptions);
     };
   }
 
@@ -174,7 +175,7 @@ function splitClasses(
   const fromClasses = split(classes.from);
   const activeClasses = split(classes.active);
   const toClasses = split(classes.to);
-  const name = classes.name && classes.name + isEnter ? "-enter" : "-exit";
+  const name = classes.name && (classes.name + isEnter ? "-enter" : "-exit");
   if (name) {
     fromClasses.unshift(`${name}-from`);
     activeClasses.unshift(`${name}-active`);
