@@ -202,7 +202,11 @@ function cssIntegration(
   const { fromClasses, activeClasses, toClasses } = classes;
   const { separate, type = "both" } = options;
   return (els, removeEls) => {
-    onCommit(() => addClasses(els, ...fromClasses, ...activeClasses));
+    onCommit(() => {
+      for (const el of els)
+        el.dispatchEvent(new AnimationEvent("animationend"));
+      addClasses(els, ...fromClasses, ...activeClasses);
+    });
     onUpdate(() =>
       onCommit(() =>
         (isEnter ? requestAnimationFrame : run)(() => {
