@@ -28,18 +28,3 @@ export function onUpdate(callback: () => void): void {
 export function onCommit(callback: () => void): void {
   commitCallbacks?.push(callback);
 }
-
-export class ChildListObserver extends MutationObserver {
-  private callbacks: (() => void)[] = [];
-  constructor() {
-    super(() => {
-      this.callbacks.shift()?.();
-    });
-  }
-  observe(node: Node): void {
-    super.observe(node, { childList: true });
-  }
-  requestMutation(callback: () => void): void {
-    this.callbacks.push(callback);
-  }
-}
