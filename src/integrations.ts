@@ -1,3 +1,4 @@
+import { onCommit, onUpdate } from "./schedule";
 import {
   EnterIntegration,
   ExitIntegration,
@@ -42,9 +43,12 @@ export function animateMove(
 
   const animateEl = animate;
   return (els) => {
-    filterMovedEls(els).then((movedEls) => {
-      for (const [el, x, y] of movedEls) animateEl(el, x, y);
-    });
+    const movedEls = filterMovedEls(els);
+    onUpdate(() =>
+      onCommit(() => {
+        for (const [el, x, y] of movedEls) animateEl(el, x, y);
+      })
+    );
   };
 }
 
@@ -55,20 +59,35 @@ const DEFAULT_ENTER_KEYFRAMES: KeyframeType = {
 export function animateEnter(
   animate:
     | ((el: StylableElement) => void)
-    | { keyframes?: KeyframeType; options?: KeyframeAnimationOptions } = {}
+    | {
+        keyframes?: KeyframeType;
+        extraKeyframesList?: KeyframeType[];
+        options?: KeyframeAnimationOptions;
+      } = {}
 ): EnterIntegration {
   if (typeof animate === "object") {
-    const { keyframes = DEFAULT_ENTER_KEYFRAMES, options } = animate;
+    const {
+      keyframes = DEFAULT_ENTER_KEYFRAMES,
+      extraKeyframesList,
+      options,
+    } = animate;
     animate = (el) => {
-      el.animate(keyframes, { ...DEFAULT_OPTIONS, id: "enter", ...options });
+      const animationOptions = { ...DEFAULT_OPTIONS, id: "enter", ...options };
+      if (extraKeyframesList)
+        for (const extraKeyframes of extraKeyframesList) {
+          el.animate(extraKeyframes, animationOptions);
+        }
+      el.animate(keyframes, animationOptions);
     };
   }
 
   const animateEl = animate;
   return (els) =>
-    requestAnimationFrame(() => {
-      for (const el of els) animateEl(el);
-    });
+    onUpdate(() =>
+      onCommit(() => {
+        for (const el of els) animateEl(el);
+      })
+    );
 }
 
 const DEFAULT_EXIT_KEYFRAMES: KeyframeType = {
@@ -80,6 +99,7 @@ export function animateExit(
     | ((el: StylableElement) => Promise<unknown>)
     | {
         keyframes?: KeyframeType;
+        extraKeyframesList?: KeyframeType[];
         options?: KeyframeAnimationOptions;
       } = {},
   options: {
@@ -90,33 +110,46 @@ export function animateExit(
 ): ExitIntegration {
   const { absolute, reverseEnter, separate = reverseEnter } = options;
   if (typeof animate === "object") {
-    const { keyframes = DEFAULT_EXIT_KEYFRAMES, options } = animate;
-    animate = (el) =>
-      el.animate(keyframes, { ...DEFAULT_OPTIONS, ...options }).finished;
+    const {
+      keyframes = DEFAULT_EXIT_KEYFRAMES,
+      extraKeyframesList,
+      options,
+    } = animate;
+    animate = (el) => {
+      const animationOptions = { ...DEFAULT_OPTIONS, ...options };
+      if (extraKeyframesList)
+        for (const extraKeyframes of extraKeyframesList)
+          el.animate(extraKeyframes, animationOptions);
+      return el.animate(keyframes, animationOptions).finished;
+    };
   }
 
   const animate_ = animate;
   const animateEl = (el: StylableElement) => {
     if (reverseEnter) {
-      const enterAnimation = el
-        .getAnimations()
-        .find((anim) => anim.id === "enter");
-      if (enterAnimation) {
-        enterAnimation.reverse();
-        return enterAnimation.finished;
+      const animations = el.getAnimations();
+      let reversePromise: Promise<unknown> | undefined;
+      for (const animation of animations) {
+        if (animation.id === "enter") {
+          animation.reverse();
+          reversePromise = animation.finished;
+        }
       }
+      if (reversePromise) return reversePromise;
     }
     return animate_(el);
   };
 
   return (els, removeEls) => {
     if (absolute) detachEls(els);
-    if (separate) {
-      for (const el of els) animateEl(el).then(() => removeEls(el));
-    } else {
-      animateEl(els.shift() as StylableElement).then(() => removeEls());
-      for (const el of els) animateEl(el);
-    }
+    onCommit(() => {
+      if (separate) {
+        for (const el of els) animateEl(el).then(() => removeEls(el));
+      } else {
+        animateEl(els.shift() as StylableElement).then(() => removeEls());
+        for (const el of els) animateEl(el);
+      }
+    });
   };
 }
 
@@ -135,23 +168,22 @@ function splitClasses(
     active?: string | undefined;
     to?: string | undefined;
   },
-  integrationType: "enter" | "exit"
+  isEnter: boolean
 ) {
   const split = (className?: string) => className?.split(" ") ?? [];
   const fromClasses = split(classes.from);
   const activeClasses = split(classes.active);
   const toClasses = split(classes.to);
-  const name = classes.name;
+  const name = classes.name && classes.name + isEnter ? "-enter" : "-exit";
   if (name) {
-    fromClasses.unshift(`${name}-${integrationType}-from`);
-    activeClasses.unshift(`${name}-${integrationType}-active`);
-    toClasses.unshift(`${name}-${integrationType}-to`);
+    fromClasses.unshift(`${name}-from`);
+    activeClasses.unshift(`${name}-active`);
+    toClasses.unshift(`${name}-to`);
   }
   return { fromClasses, activeClasses, toClasses };
 }
 
 function cssIntegration(
-  integrationType: "enter" | "exit",
   classes: {
     fromClasses: string[];
     activeClasses: string[];
@@ -160,7 +192,8 @@ function cssIntegration(
   options: {
     separate?: boolean;
     type?: "animationend" | "transitionend" | "both";
-  }
+  },
+  isEnter: boolean
 ): (
   els: StylableElement[],
   removeElements?: (el?: StylableElement) => void
@@ -168,34 +201,36 @@ function cssIntegration(
   const { fromClasses, activeClasses, toClasses } = classes;
   const { separate, type = "both" } = options;
   return (els, removeEls) => {
-    addClasses(els, ...fromClasses, ...activeClasses);
-    (integrationType === "enter" ? requestAnimationFrame : run)(() =>
-      requestAnimationFrame(() => {
-        removeClasses(els, ...fromClasses);
-        addClasses(els, ...toClasses);
-        const registerEventHandler = (el: StylableElement) => {
-          const handleEvent = ({ currentTarget }: Event) => {
-            if (currentTarget !== el) return;
-            removeEls
-              ? separate
-                ? removeEls(el)
-                : removeEls()
-              : separate
-              ? el.classList.remove(...activeClasses)
-              : removeClasses(els, ...activeClasses);
+    onCommit(() => addClasses(els, ...fromClasses, ...activeClasses));
+    onUpdate(() =>
+      onCommit(() =>
+        (isEnter ? requestAnimationFrame : run)(() => {
+          removeClasses(els, ...fromClasses);
+          addClasses(els, ...toClasses);
+          const registerEventHandler = (el: StylableElement) => {
+            const handleEvent = ({ currentTarget }: Event) => {
+              if (currentTarget !== el) return;
+              removeEls
+                ? separate
+                  ? removeEls(el)
+                  : removeEls()
+                : separate
+                ? el.classList.remove(...activeClasses)
+                : removeClasses(els, ...activeClasses);
+              if (type === "both") {
+                el.removeEventListener("transitionend", handleEvent);
+                el.removeEventListener("animationend", handleEvent);
+              } else el.removeEventListener(type, handleEvent);
+            };
             if (type === "both") {
-              el.removeEventListener("transitionend", handleEvent);
-              el.removeEventListener("animationend", handleEvent);
-            } else el.removeEventListener(type, handleEvent);
+              el.addEventListener("transitionend", handleEvent);
+              el.addEventListener("animationend", handleEvent);
+            } else el.addEventListener(type, handleEvent);
           };
-          if (type === "both") {
-            el.addEventListener("transitionend", handleEvent);
-            el.addEventListener("animationend", handleEvent);
-          } else el.addEventListener(type, handleEvent);
-        };
-        if (separate) for (const el of els) registerEventHandler(el);
-        else registerEventHandler(els[0]);
-      })
+          if (separate) for (const el of els) registerEventHandler(el);
+          else registerEventHandler(els[0]);
+        })
+      )
     );
   };
 }
@@ -212,8 +247,8 @@ export function cssEnter(
     type?: "animationend" | "transitionend" | "both";
   } = {}
 ): EnterIntegration {
-  const classes = splitClasses(classNames, "enter");
-  const enter = cssIntegration("enter", classes, options);
+  const classes = splitClasses(classNames, true);
+  const enter = cssIntegration(classes, options, true);
   return Object.assign(enter, {
     initial: (els: StylableElement[]) => addClasses(els, ...classes.toClasses),
   });
@@ -233,8 +268,8 @@ export function cssExit(
   } = {}
 ): ExitIntegration {
   const { absolute, ...integrationOptions } = options;
-  const classes = splitClasses(classNames, "exit");
-  const exit = cssIntegration("exit", classes, integrationOptions);
+  const classes = splitClasses(classNames, false);
+  const exit = cssIntegration(classes, integrationOptions, false);
   return (els, removeEls) => {
     absolute && detachEls(els);
     exit(els, removeEls);
