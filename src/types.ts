@@ -1,4 +1,4 @@
-export type StylableElement = SVGElement | HTMLElement;
+export type StylableElement = Element & ElementCSSInlineStyle;
 export type KeyframeType = Keyframe[] | PropertyIndexedKeyframes;
 export type MovedElement = [el: StylableElement, x: number, y: number];
 export type MoveIntegration = (allElements: StylableElement[]) => void;
