@@ -68,11 +68,7 @@ A callback called when children elements are added, removed, or reordered. Accep
 
 A callback called initially when the `TransitionGroup` component is first created. Accepts an array of all initally present elements. Used to apply initial styling. Also accepts a boolean; if true, calls `enter`, and if false, stops `enter.initial` from being called if present.
 
-## Integrations
-
-Helpers that return functions to be passed into `TransitionGroup` as props.
-
-### `animate` Integrations
+## `animate` Integrations
 
 All of these integrations can be provided with either multiple sets of keyframes and options to be passed to `element.animate` or a callback to manually animate an element. Providing keyframes via `extraKeyframesList` can be useful if you want to use `composite` with unsupported properties.
 
@@ -206,13 +202,13 @@ Filters an array of elements to just those which have moved after the DOM update
 
 Sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit.
 
-### Scheduling
+## Scheduling
 
-#### onUpdate
+### onUpdate
 
 Takes a callback, used to schedule element operations between integrations. When called within an integration, causes the callback passed to be called after the DOM updates.
 
-#### onCommit
+### onCommit
 
 Takes a callback, used to schedule element operations between integrations. When called within an integration, causes the callback passed to be called after all the integrations have returned. When called within `onUpdate`, causes the callback passed to be called after all `onUpdate` callbacks have been called. Any style changes to elements via any method should be wrapped in an `onCommit`, so that integrations that need to read values from elements read correctly before any changes have been applied.
 
