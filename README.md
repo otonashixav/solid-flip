@@ -214,6 +214,7 @@ Takes a callback, used to schedule element operations between integrations. When
 ### 0.7.2
 
 - Simplify reverse enter implementation.
+- Default keyframes now use computed styles instead of animating from/to `opacity: 1`, making them more compatible with default opacity other than 1, and when exiting halfway through the enter animation.
 
 ### 0.7.1
 
