@@ -18,42 +18,36 @@ const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
   fill: "backwards",
 };
 
-const DEFAULT_MOVE_GET_KEYFRAMES = (x: number, y: number): KeyframeType => ({
+const DEFAULT_MOVE_KEYFRAMES = (x: number, y: number): KeyframeType => ({
   transform: [`translate(${x}px,${y}px)`, "none"],
   composite: "add",
 });
 
 function animateAllKeyframes(
-  el: Animatable,
-  keyframes: KeyframeType,
-  extraKeyframesList?: KeyframeType[],
+  el: StylableElement,
+  keyframes: KeyframeType | ((el: StylableElement) => KeyframeType),
   options?: KeyframeAnimationOptions
 ): Animation {
-  const animationOptions = { ...DEFAULT_OPTIONS, ...options };
-  if (extraKeyframesList)
-    for (const extraKeyframes of extraKeyframesList)
-      el.animate(extraKeyframes, animationOptions);
-  return el.animate(keyframes, animationOptions);
+  return el.animate(
+    typeof keyframes === "function" ? keyframes(el) : keyframes,
+    {
+      ...DEFAULT_OPTIONS,
+      ...options,
+    }
+  );
 }
 
 export function animateMove(
   animate:
     | {
-        getKeyframes?: (x: number, y: number) => KeyframeType;
-        extraKeyframesList?: KeyframeType[];
+        keyframes?: (x: number, y: number) => KeyframeType;
         options?: KeyframeAnimationOptions;
       }
     | ((el: StylableElement, x: number, y: number) => void) = {}
 ): MoveIntegration {
   if (typeof animate === "object") {
-    const {
-      getKeyframes = DEFAULT_MOVE_GET_KEYFRAMES,
-      extraKeyframesList,
-      options,
-    } = animate;
-    animate = (el, x, y) => {
-      animateAllKeyframes(el, getKeyframes(x, y), extraKeyframesList, options);
-    };
+    const { keyframes = DEFAULT_MOVE_KEYFRAMES, options } = animate;
+    animate = (el, x, y) => animateAllKeyframes(el, keyframes(x, y), options);
   }
 
   const animateEl = animate;
@@ -74,20 +68,15 @@ const DEFAULT_ENTER_KEYFRAMES: KeyframeType = {
 export function animateEnter(
   animate:
     | {
-        keyframes?: KeyframeType;
-        extraKeyframesList?: KeyframeType[];
+        keyframes?: KeyframeType | ((el: StylableElement) => KeyframeType);
         options?: KeyframeAnimationOptions;
       }
     | ((el: StylableElement) => void) = {}
 ): EnterIntegration {
   if (typeof animate === "object") {
-    const {
-      keyframes = DEFAULT_ENTER_KEYFRAMES,
-      extraKeyframesList,
-      options,
-    } = animate;
+    const { keyframes = DEFAULT_ENTER_KEYFRAMES, options } = animate;
     animate = (el) => {
-      animateAllKeyframes(el, keyframes, extraKeyframesList, {
+      animateAllKeyframes(el, keyframes, {
         id: "enter",
         ...options,
       });
@@ -110,8 +99,7 @@ const DEFAULT_EXIT_KEYFRAMES: KeyframeType = {
 export function animateExit(
   animate:
     | {
-        keyframes?: KeyframeType;
-        extraKeyframesList?: KeyframeType[];
+        keyframes?: KeyframeType | ((el: StylableElement) => KeyframeType);
         options?: KeyframeAnimationOptions;
       }
     | ((el: StylableElement) => Promise<unknown>) = {},
@@ -123,15 +111,8 @@ export function animateExit(
 ): ExitIntegration {
   const { absolute, reverseEnter, separate = reverseEnter } = options;
   if (typeof animate === "object") {
-    const {
-      keyframes = DEFAULT_EXIT_KEYFRAMES,
-      extraKeyframesList,
-      options,
-    } = animate;
-    animate = (el) => {
-      return animateAllKeyframes(el, keyframes, extraKeyframesList, options)
-        .finished;
-    };
+    const { keyframes = DEFAULT_EXIT_KEYFRAMES, options } = animate;
+    animate = (el) => animateAllKeyframes(el, keyframes, options).finished;
   }
 
   const animate_ = animate;
