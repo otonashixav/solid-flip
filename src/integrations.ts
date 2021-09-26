@@ -123,15 +123,12 @@ export function animateExit(
   const animate_ = animate;
   const animateEl = (el: StylableElement) => {
     if (reverseEnter) {
-      const animations = el.getAnimations();
-      let reversePromise: Promise<unknown> | undefined;
-      for (const animation of animations) {
+      for (const animation of el.getAnimations()) {
         if (animation.id === "enter") {
           animation.reverse();
-          reversePromise = animation.finished;
+          return animation.finished;
         }
       }
-      if (reversePromise) return reversePromise;
     }
     return animate_(el);
   };
