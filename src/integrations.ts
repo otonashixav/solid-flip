@@ -66,9 +66,11 @@ export function animateMove(
   };
 }
 
-const DEFAULT_ENTER_KEYFRAMES: KeyframeType = {
-  opacity: [0, 1],
-};
+const DEFAULT_ENTER_KEYFRAMES: (el: StylableElement) => KeyframeType = (
+  el
+) => ({
+  opacity: ["0", getComputedStyle(el).opacity],
+});
 
 export function animateEnter(
   animate:
@@ -97,9 +99,9 @@ export function animateEnter(
     );
 }
 
-const DEFAULT_EXIT_KEYFRAMES: KeyframeType = {
-  opacity: [1, 0],
-};
+const DEFAULT_EXIT_KEYFRAMES: (el: StylableElement) => KeyframeType = (el) => ({
+  opacity: [getComputedStyle(el).opacity, "0"],
+});
 
 export function animateExit(
   animate:
