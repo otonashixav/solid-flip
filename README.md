@@ -70,7 +70,7 @@ A callback called initially when the `TransitionGroup` component is first create
 
 ## Animate Integrations
 
-All of these integrations can be provided with either multiple sets of keyframes and options to be passed to `element.animate` or a callback to manually animate an element. Providing keyframes via `extraKeyframesList` can be useful if you want to use `composite` with unsupported properties.
+All of these integrations can be provided with either keyframes (as a string or callback) and options to be passed to `element.animate` or a callback to manually animate an element.
 
 These animation options are applied by default:
 
@@ -88,8 +88,7 @@ const DEFAULT_OPTIONS = {
 function animateEnter(
   animate:
     | {
-        keyframes?: KeyframeType;
-        extraKeyframesList?: KeyframeType[];
+        keyframes: KeyframeType | ((el: StylableElement) => KeyframeType);
         options?: KeyframeAnimationOptions;
       }
     | ((el: StylableElement) => void) = {}
@@ -104,8 +103,7 @@ function animateEnter(
 function animateExit(
   animate:
     | {
-        keyframes?: KeyframeType;
-        extraKeyframesList?: KeyframeType[];
+        keyframes: KeyframeType | ((el: StylableElement) => KeyframeType);
         options?: KeyframeAnimationOptions;
       }
     | ((el: StylableElement) => Promise<unknown>) = {},
@@ -129,15 +127,14 @@ function animateExit(
 function animateMove(
   animate:
     | {
-        getKeyframes?: (x: number, y: number) => KeyframeType;
-        extraKeyframesList?: KeyframeType[];
+        keyframes?: (el: StylableElement, x: number, y: number) => KeyframeType;
         options?: KeyframeAnimationOptions;
       }
     | ((el: StylableElement, x: number, y: number) => void) = {}
 ): MoveIntegration;
 ```
 
-`getKeyframes` defaults to a simple straight line movement. If providing your own animation, it should move the element from `(x, y)` to `(0, 0)`.
+`keyframes` defaults to a simple straight line movement. If providing your own animation, it should move the element from `(x, y)` to `(0, 0)`.
 
 ## Class Integrations
 
@@ -213,6 +210,12 @@ Takes a callback, used to schedule element operations between integrations. When
 Takes a callback, used to schedule element operations between integrations. When called within an integration, causes the callback passed to be called after all the integrations have returned. When called within `onUpdate`, causes the callback passed to be called after all `onUpdate` callbacks have been called. Any style changes to elements via any method should be wrapped in an `onCommit`, so that integrations that need to read values from elements read correctly before any changes have been applied.
 
 ## Changelog
+
+### 0.7.1
+
+- Renamed `animateMove`'s `getKeyframes` to `keyframes`.
+- Removed `extraKeyframesList` as it is obsoleted by providing an array of keyframes with offsets.
+- Added the option to pass a callback to `keyframes` on `animateEnter` and `animateExit`.
 
 ### 0.7.0
 

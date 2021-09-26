@@ -18,7 +18,11 @@ const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
   fill: "backwards",
 };
 
-const DEFAULT_MOVE_KEYFRAMES = (x: number, y: number): KeyframeType => ({
+const DEFAULT_MOVE_KEYFRAMES = (
+  _el: StylableElement,
+  x: number,
+  y: number
+): KeyframeType => ({
   transform: [`translate(${x}px,${y}px)`, "none"],
   composite: "add",
 });
@@ -40,14 +44,15 @@ function animateAllKeyframes(
 export function animateMove(
   animate:
     | {
-        keyframes?: (x: number, y: number) => KeyframeType;
+        keyframes?: (el: StylableElement, x: number, y: number) => KeyframeType;
         options?: KeyframeAnimationOptions;
       }
     | ((el: StylableElement, x: number, y: number) => void) = {}
 ): MoveIntegration {
   if (typeof animate === "object") {
     const { keyframes = DEFAULT_MOVE_KEYFRAMES, options } = animate;
-    animate = (el, x, y) => animateAllKeyframes(el, keyframes(x, y), options);
+    animate = (el, x, y) =>
+      animateAllKeyframes(el, keyframes(el, x, y), options);
   }
 
   const animateEl = animate;
