@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=-607382427&version=1.1.4)
+[Playground Link](https://playground.solidjs.com/?hash=1894588693&version=1.1.5)
 
 ```tsx
 <TransitionGroup
