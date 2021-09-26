@@ -46,29 +46,29 @@ pnpm i @otonashixav/solid-flip
 
 ## `<TransitionGroup>`
 
-The `TransitionGroup` component should wrap elements to be transitioned. Only elements with a `style` property implementing `ElementCSSInlineStyle` e.g. HTMLElements and SVGElements are supported.
+The `TransitionGroup` component should wrap elements to be transitioned. Only elements with a `style` property implementing `CSSStyleDeclaration` e.g. HTMLElements and SVGElements are supported.
 
-### `props`
+### props
 
 These are callbacks which if provided, are used to animate child elements as they enter, exit and are reordered. You can either pass your own functions or use the provided integrations.
 
-#### `enter`
+#### enter
 
 A callback called when elements enter. Accepts an array of entering elements. Used to transition entering elements. If `initial` is defined on the function, it will be called when the `TransitionGroup` component is created if there is no `initial` prop passed in.
 
-#### `exit`
+#### exit
 
 A callback called when elements exit. Accepts an array of exiting elements and a callback to remove one or all of them. Used to transition exiting elements.
 
-#### `move`
+#### move
 
 A callback called when children elements are added, removed, or reordered. Accepts an array of all elements. Used to move elements using the FLIP technique.
 
-#### `initial`
+#### initial
 
 A callback called initially when the `TransitionGroup` component is first created. Accepts an array of all initally present elements. Used to apply initial styling. Also accepts a boolean; if true, calls `enter`, and if false, stops `enter.initial` from being called if present.
 
-## `animate` Integrations
+## Animate Integrations
 
 All of these integrations can be provided with either multiple sets of keyframes and options to be passed to `element.animate` or a callback to manually animate an element. Providing keyframes via `extraKeyframesList` can be useful if you want to use `composite` with unsupported properties.
 
@@ -82,7 +82,7 @@ const DEFAULT_OPTIONS = {
 };
 ```
 
-### `animateEnter`
+### animateEnter
 
 ```ts
 function animateEnter(
@@ -98,7 +98,7 @@ function animateEnter(
 
 `keyframes` defaults to a simple fade in animation.
 
-### `animateExit`
+### animateExit
 
 ```ts
 function animateExit(
@@ -123,7 +123,7 @@ function animateExit(
 - `reverseEnter: true` causes the element to exit by reversing any ongoing enter animations instead of exiting with the provided animation. It also sets `separate: true`.
 - `separate: true` causes each element to be removed when its own animation has completed, instead of using a single animation to remove all the elements. This is useful if your animations have different durations, but otherwise less performant.
 
-### `animateMove`
+### animateMove
 
 ```ts
 function animateMove(
