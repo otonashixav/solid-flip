@@ -232,16 +232,16 @@ function cssIntegration(
                 ? el.classList.remove(...activeClasses)
                 : removeClasses(els, ...activeClasses);
               isEnter && el.removeEventListener("cssexit", handleEvent);
-              if (type === "both") {
+              type !== "animationend" &&
                 el.removeEventListener("transitionend", handleEvent);
+              type !== "transitionend" &&
                 el.removeEventListener("animationend", handleEvent);
-              } else el.removeEventListener(type, handleEvent);
             };
             isEnter && el.addEventListener("cssexit", handleEvent);
-            if (type === "both") {
+            type !== "animationend" &&
               el.addEventListener("transitionend", handleEvent);
+            type !== "transitionend" &&
               el.addEventListener("animationend", handleEvent);
-            } else el.addEventListener(type, handleEvent);
           };
           if (separate) for (const el of els) registerEventHandler(el);
           else registerEventHandler(els[0]);
