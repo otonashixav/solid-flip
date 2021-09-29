@@ -62,7 +62,7 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
 
         if (exit) {
           // Modify prevElSet in place since we have no more use for it
-          const exitingElSet = new Set(prevElSet);
+          const exitingElSet = prevElSet;
           for (const el of exitingElSet)
             elSet.has(el) && exitingElSet.delete(el);
           // Persist previous els; they will be removed by removeEls
@@ -74,9 +74,7 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
             const removeEls = (removedEl?: StylableElement) => {
               setEls((prevEls) => {
                 const els = prevEls.filter((el) =>
-                  removedEl === undefined
-                    ? !exitingElSet.has(el)
-                    : el !== removedEl
+                  removedEl ? el !== removedEl : !exitingElSet.has(el)
                 );
                 move && els.length && move(els);
                 return els;
