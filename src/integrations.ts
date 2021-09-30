@@ -207,8 +207,8 @@ function cssIntegration(
           removeClasses(els, ...fromClasses);
           addClasses(els, ...toClasses);
           const registerEventHandler = (el: StylableElement) => {
-            const handleEvent = ({ currentTarget }: Event) => {
-              if (currentTarget !== el) return;
+            const handleEvent = ({ target }: Event) => {
+              if (target !== el) return;
               removeEls
                 ? separate
                   ? removeEls(el)
