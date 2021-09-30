@@ -211,6 +211,10 @@ Takes a callback, used to schedule element operations between integrations. When
 
 ## Changelog
 
+### 0.7.3
+
+- Fix checking removed elements against `currentTarget` instead of `target` as intended.
+
 ### 0.7.2
 
 - Simplify reverse enter implementation.
