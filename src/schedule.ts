@@ -12,13 +12,14 @@ export function schedule(
   const commit_ = commitCallbacks;
   updateCallbacks = commitCallbacks = undefined;
   for (const callback of commit_) callback();
-  onUpdate(() => {
-    commitCallbacks = [];
-    for (const callback of onUpdate_) callback();
-    const commit_ = commitCallbacks;
-    commitCallbacks = undefined;
-    for (const callback of commit_) callback();
-  });
+  onUpdate_.length &&
+    onUpdate(() => {
+      commitCallbacks = [];
+      for (const callback of onUpdate_) callback();
+      const commit_ = commitCallbacks;
+      commitCallbacks = undefined;
+      for (const callback of commit_) callback();
+    });
 }
 
 export function onUpdate(callback: () => void): void {
