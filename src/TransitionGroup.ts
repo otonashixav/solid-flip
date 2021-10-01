@@ -45,14 +45,14 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
     const els = resolvedToEls(resolved);
     const elSet = new Set(els);
 
-    if (isInitial) {
-      isInitial = false;
-      if (typeof enterInitial === "function") enterInitial(els);
-      else if (enterInitial === true && enter) enter(els);
-      else if (enterInitial !== false && enter?.initial) enter.initial(els);
-      setEls(els);
-    } else
-      schedule(requestAnimationFrame, () => {
+    schedule(requestAnimationFrame, () => {
+      if (isInitial) {
+        isInitial = false;
+        if (typeof enterInitial === "function") enterInitial(els);
+        else if (enterInitial === true && enter) enter(els);
+        else if (enterInitial !== false && enter?.initial) enter.initial(els);
+        setEls(els);
+      } else {
         const prevEls = untrack(getEls);
 
         if (enter) {
@@ -90,7 +90,8 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
         }
 
         setEls(els);
-      });
+      }
+    });
 
     return elSet;
   }, new Set(getEls()));
