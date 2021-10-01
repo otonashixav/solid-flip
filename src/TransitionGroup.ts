@@ -47,8 +47,8 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
 
     schedule(requestAnimationFrame, () => {
       if (isInitial) {
-        isInitial = false;
         if (!els.length) return;
+        isInitial = false;
         if (typeof enterInitial === "function") enterInitial(els);
         else if (enterInitial === true && enter) enter(els);
         else if (enterInitial !== false && enter?.initial) enter.initial(els);
