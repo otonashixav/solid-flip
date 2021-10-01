@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=2056248676&version=1.1.5)
+[Playground Link](https://playground.solidjs.com/?hash=1964886236&version=1.1.5)
 
 ```tsx
 <TransitionGroup
@@ -210,6 +210,10 @@ Takes a callback, used to schedule element operations between integrations. When
 Takes a callback, used to schedule element operations between integrations. When called within an integration, causes the callback passed to be called after all the integrations have returned. When called within `onUpdate`, causes the callback passed to be called after all `onUpdate` callbacks have been called. Any style changes to elements via any method should be wrapped in an `onCommit`, so that integrations that need to read values from elements read correctly before any changes have been applied.
 
 ## Changelog
+
+### 0.7.5
+
+- Keep `TransitionGroup` uninitialized (i.e. delay running or not running initial) until at least one child exists to help with lazily loading children.
 
 ### 0.7.4
 
