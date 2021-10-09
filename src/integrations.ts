@@ -203,8 +203,8 @@ function cssIntegration(
     });
     onUpdate(() =>
       onCommit(() =>
-        (isEnter ? requestAnimationFrame : run)(() =>
-          (isEnter ? setTimeout : run)(() => {
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
             removeClasses(els, ...fromClasses);
             addClasses(els, ...toClasses);
             const registerEventHandler = (el: StylableElement) => {
