@@ -30,11 +30,11 @@ export interface TransitionGroupProps {
 }
 
 export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
-  const enterInitial = props.initial;
-  let { move, enter, exit } = {} as TransitionGroupProps;
-  createComputed(() => (move = props.move));
+  let { initial, enter, exit, move } = {} as TransitionGroupProps;
+  createComputed(() => (initial = props.initial));
   createComputed(() => (enter = props.enter));
   createComputed(() => (exit = props.exit));
+  createComputed(() => (move = props.move));
 
   const getResolved = children(() => props.children);
   const [getEls, setEls] = createSignal<StylableElement[]>([]);
@@ -44,26 +44,36 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
     const resolved = getResolved();
     const els = resolvedToEls(resolved);
     const elSet = new Set(els);
+    const integrations: (() => void)[] = [];
 
-    schedule(requestAnimationFrame, () => {
-      if (isInitial) {
-        if (!els.length) return;
+    if (isInitial) {
+      if (els.length) {
         isInitial = false;
-        if (typeof enterInitial === "function") enterInitial(els);
-        else if (enterInitial === true && enter) enter(els);
-        else if (enterInitial !== false && enter?.initial) enter.initial(els);
-        setEls(els);
-        return;
+        const initial_ = initial;
+        if (typeof initial_ === "function") {
+          integrations.push(() => initial_(els));
+        } else if (enter) {
+          const enter_ = enter;
+          if (initial_ === true) integrations.push(() => enter_(els));
+          else if (initial_ !== false && enter_.initial)
+            integrations.push(() =>
+              (enter_.initial as InitialIntegration)(els)
+            );
+        }
       }
+    } else {
+      const enter_ = enter;
+      const exit_ = exit;
+      const move_ = move;
 
       const prevEls = untrack(getEls);
 
-      if (enter) {
+      if (enter_) {
         const enteringEls = els.filter((el) => !prevElSet.has(el));
-        enteringEls.length && enter(enteringEls);
+        enteringEls.length && integrations.push(() => enter_(enteringEls));
       }
 
-      if (exit) {
+      if (exit_) {
         // Modify prevElSet in place since we have no more use for it
         const exitingElSet = prevElSet;
         for (const el of exitingElSet) elSet.has(el) && exitingElSet.delete(el);
@@ -73,25 +83,33 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
         if (exitingElSet.size) {
           // We have els exiting
           const exitingEls = [...exitingElSet];
-          const removeEls = (removedEl?: StylableElement) => {
-            setEls((prevEls) => {
-              const els = prevEls.filter((el) =>
-                removedEl ? el !== removedEl : !exitingElSet.has(el)
-              );
-              move && els.length && move(els);
-              return els;
-            });
-          };
-          exit(exitingEls, removeEls);
+          integrations.push(() =>
+            exit_(exitingEls, (removedEl?: StylableElement) => {
+              setEls((prevEls) => {
+                const els = prevEls.filter((el) =>
+                  removedEl ? el !== removedEl : !exitingElSet.has(el)
+                );
+                move && els.length && move(els);
+                return els;
+              });
+            })
+          );
         }
       }
 
-      if (move) {
+      if (move_) {
         const movingEls = prevEls;
-        movingEls.length && move(movingEls);
+        movingEls.length && integrations.push(() => move_(movingEls));
       }
+    }
 
-      setEls(els);
+    setTimeout(() => {
+      schedule(
+        () => setEls(els),
+        () => {
+          for (const integration of integrations) integration();
+        }
+      );
     });
 
     return elSet;

@@ -203,34 +203,36 @@ function cssIntegration(
     });
     onUpdate(() =>
       onCommit(() =>
-        (isEnter ? requestAnimationFrame : run)(() => {
-          removeClasses(els, ...fromClasses);
-          addClasses(els, ...toClasses);
-          const registerEventHandler = (el: StylableElement) => {
-            const handleEvent = ({ target }: Event) => {
-              if (target !== el) return;
-              removeEls
-                ? separate
-                  ? removeEls(el)
-                  : removeEls()
-                : separate
-                ? el.classList.remove(...activeClasses)
-                : removeClasses(els, ...activeClasses);
-              isEnter && el.removeEventListener("cssexit", handleEvent);
+        (isEnter ? requestAnimationFrame : run)(() =>
+          (isEnter ? setTimeout : run)(() => {
+            removeClasses(els, ...fromClasses);
+            addClasses(els, ...toClasses);
+            const registerEventHandler = (el: StylableElement) => {
+              const handleEvent = ({ target }: Event) => {
+                if (target !== el) return;
+                removeEls
+                  ? separate
+                    ? removeEls(el)
+                    : removeEls()
+                  : separate
+                  ? el.classList.remove(...activeClasses)
+                  : removeClasses(els, ...activeClasses);
+                isEnter && el.removeEventListener("cssexit", handleEvent);
+                type !== "animationend" &&
+                  el.removeEventListener("transitionend", handleEvent);
+                type !== "transitionend" &&
+                  el.removeEventListener("animationend", handleEvent);
+              };
+              isEnter && el.addEventListener("cssexit", handleEvent);
               type !== "animationend" &&
-                el.removeEventListener("transitionend", handleEvent);
+                el.addEventListener("transitionend", handleEvent);
               type !== "transitionend" &&
-                el.removeEventListener("animationend", handleEvent);
+                el.addEventListener("animationend", handleEvent);
             };
-            isEnter && el.addEventListener("cssexit", handleEvent);
-            type !== "animationend" &&
-              el.addEventListener("transitionend", handleEvent);
-            type !== "transitionend" &&
-              el.addEventListener("animationend", handleEvent);
-          };
-          if (separate) for (const el of els) registerEventHandler(el);
-          else registerEventHandler(els[0]);
-        })
+            if (separate) for (const el of els) registerEventHandler(el);
+            else registerEventHandler(els[0]);
+          })
+        )
       )
     );
   };

@@ -2,7 +2,7 @@ let updateCallbacks: (() => void)[] | undefined;
 let commitCallbacks: (() => void)[] | undefined;
 
 export function schedule(
-  onUpdate: (fn: () => void) => void,
+  update: (fn: () => void) => void,
   fn: () => void
 ): void {
   commitCallbacks = [];
@@ -13,7 +13,7 @@ export function schedule(
   updateCallbacks = commitCallbacks = undefined;
   for (const callback of commit_) callback();
   onUpdate_.length &&
-    onUpdate(() => {
+    update(() => {
       commitCallbacks = [];
       for (const callback of onUpdate_) callback();
       const commit_ = commitCallbacks;
