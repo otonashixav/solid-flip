@@ -3,8 +3,8 @@ import {
   createSignal,
   untrack,
   JSX,
-  createRenderEffect,
   Component,
+  createComputed,
 } from "solid-js";
 import { schedule } from "./schedule";
 import {
@@ -32,28 +32,28 @@ export interface TransitionGroupProps {
 export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
   const enterInitial = props.initial;
   let { move, enter, exit } = {} as TransitionGroupProps;
-  createRenderEffect(() => (move = props.move));
-  createRenderEffect(() => (enter = props.enter));
-  createRenderEffect(() => (exit = props.exit));
+  createComputed(() => (move = props.move));
+  createComputed(() => (enter = props.enter));
+  createComputed(() => (exit = props.exit));
 
   const getResolved = children(() => props.children);
   const [getEls, setEls] = createSignal<StylableElement[]>([]);
 
   let isInitial = true;
-  createRenderEffect((prevElSet: Set<StylableElement>) => {
+  createComputed((prevElSet: Set<StylableElement>) => {
     const resolved = getResolved();
     const els = resolvedToEls(resolved);
     const elSet = new Set(els);
 
     schedule(requestAnimationFrame, () => {
       if (isInitial) {
-        if (!els.length) return;
+        if (!els.length) return elSet;
         isInitial = false;
         if (typeof enterInitial === "function") enterInitial(els);
         else if (enterInitial === true && enter) enter(els);
         else if (enterInitial !== false && enter?.initial) enter.initial(els);
         setEls(els);
-        return;
+        return elSet;
       }
 
       const prevEls = untrack(getEls);
