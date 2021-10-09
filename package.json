@@ -16,19 +16,22 @@
       "default": "./dist/esm/index.js"
     }
   },
+  "peerDependencies": {
+    "solid-js": ">=1.0.0"
+  },
   "author": "Xavier Loh",
   "license": "WTFPL",
   "devDependencies": {
-    "@babel/core": "^7.15.5",
+    "@babel/core": "^7.15.8",
     "@babel/preset-typescript": "^7.15.0",
-    "@types/eslint": "^7.28.0",
-    "@typescript-eslint/eslint-plugin": "^4.32.0",
-    "@typescript-eslint/parser": "^4.32.0",
+    "@types/eslint": "^7.28.1",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
     "eslint": "^7.32.0",
     "prettier": "^2.4.1",
     "rollup": "^2.58.0",
     "rollup-preset-solid": "^1.0.1",
-    "solid-js": "^1.1.5",
+    "solid-js": "^1.1.6",
     "typescript": "^4.4.3"
   },
   "files": [
@@ -44,8 +47,5 @@
   "bugs": {
     "url": "https://github.com/otonashixav/solid-flip/issues"
   },
-  "homepage": "https://github.com/otonashixav/solid-flip#readme",
-  "peerDependencies": {
-    "solid-js": ">=1.0.0"
-  }
+  "homepage": "https://github.com/otonashixav/solid-flip#readme"
 }
