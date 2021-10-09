@@ -8,10 +8,6 @@ import {
 } from "./types";
 import { detachEls, filterMovedEls } from "./utils";
 
-function run(fn: () => void): void {
-  fn();
-}
-
 const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
   duration: 300,
   easing: "ease",
