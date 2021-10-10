@@ -85,12 +85,14 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
           const exitingEls = [...exitingElSet];
           integrations.push(() =>
             exit_(exitingEls, (removedEl?: StylableElement) => {
-              setEls((prevEls) => {
-                const els = prevEls.filter((el) =>
-                  removedEl ? el !== removedEl : !exitingElSet.has(el)
+              const els = getEls().filter((el) =>
+                removedEl ? el !== removedEl : !exitingElSet.has(el)
+              );
+              setTimeout(() => {
+                schedule(
+                  () => setEls(els),
+                  () => move && els.length && move(els)
                 );
-                move && els.length && move(els);
-                return els;
               });
             })
           );
