@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=-210684681&version=1.1.6)
+[Playground Link](https://playground.solidjs.com/?hash=-1263917181&version=1.1.6)
 
 ```tsx
 <TransitionGroup
@@ -210,6 +210,10 @@ Takes a callback, used to schedule element operations between integrations. When
 Takes a callback, used to schedule element operations between integrations. When called within an integration, causes the callback passed to be called after all the integrations have returned. When called within `onUpdate`, causes the callback passed to be called after all `onUpdate` callbacks have been called. Any style changes to elements via any method should be wrapped in an `onCommit`, so that integrations that need to read values from elements read correctly before any changes have been applied.
 
 ## Changelog
+
+### 0.8.2
+
+- Use the scheduler when removing elements as well.
 
 ### 0.8.1
 
