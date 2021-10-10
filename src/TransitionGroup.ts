@@ -88,12 +88,10 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
               const els = getEls().filter((el) =>
                 removedEl ? el !== removedEl : !exitingElSet.has(el)
               );
-              setTimeout(() => {
-                schedule(
-                  () => setEls(els),
-                  () => move && els.length && move(els)
-                );
-              });
+              schedule(
+                () => setEls(els),
+                () => move && els.length && move(els)
+              );
             })
           );
         }
