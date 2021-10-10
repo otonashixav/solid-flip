@@ -3,10 +3,11 @@ import {
   createSignal,
   untrack,
   JSX,
-  Component,
   createComputed,
+  Component,
+  onMount,
 } from "solid-js";
-import { schedule } from "./schedule";
+import { startCommit, startUpdate, applyCommit, applyUpdate } from "./schedule";
 import {
   EnterIntegration,
   ExitIntegration,
@@ -30,11 +31,11 @@ export interface TransitionGroupProps {
 }
 
 export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
-  let { initial, enter, exit, move } = {} as TransitionGroupProps;
-  createComputed(() => (initial = props.initial));
+  const enterInitial = props.initial;
+  let { move, enter, exit } = {} as TransitionGroupProps;
+  createComputed(() => (move = props.move));
   createComputed(() => (enter = props.enter));
   createComputed(() => (exit = props.exit));
-  createComputed(() => (move = props.move));
 
   const getResolved = children(() => props.children);
   const [getEls, setEls] = createSignal<StylableElement[]>([]);
@@ -44,36 +45,25 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
     const resolved = getResolved();
     const els = resolvedToEls(resolved);
     const elSet = new Set(els);
-    const integrations: (() => void)[] = [];
 
+    startCommit();
+    startUpdate();
     if (isInitial) {
       if (els.length) {
         isInitial = false;
-        const initial_ = initial;
-        if (typeof initial_ === "function") {
-          integrations.push(() => initial_(els));
-        } else if (enter) {
-          const enter_ = enter;
-          if (initial_ === true) integrations.push(() => enter_(els));
-          else if (initial_ !== false && enter_.initial)
-            integrations.push(() =>
-              (enter_.initial as InitialIntegration)(els)
-            );
-        }
+        if (typeof enterInitial === "function") enterInitial(els);
+        else if (enterInitial === true && enter) enter(els);
+        else if (enterInitial !== false && enter?.initial) enter.initial(els);
       }
     } else {
-      const enter_ = enter;
-      const exit_ = exit;
-      const move_ = move;
-
       const prevEls = untrack(getEls);
 
-      if (enter_) {
+      if (enter) {
         const enteringEls = els.filter((el) => !prevElSet.has(el));
-        enteringEls.length && integrations.push(() => enter_(enteringEls));
+        enteringEls.length && enter(enteringEls);
       }
 
-      if (exit_) {
+      if (exit) {
         // Modify prevElSet in place since we have no more use for it
         const exitingElSet = prevElSet;
         for (const el of exitingElSet) elSet.has(el) && exitingElSet.delete(el);
@@ -83,35 +73,38 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
         if (exitingElSet.size) {
           // We have els exiting
           const exitingEls = [...exitingElSet];
-          integrations.push(() =>
-            exit_(exitingEls, (removedEl?: StylableElement) => {
-              const els = getEls().filter((el) =>
+          const removeEls = (removedEl?: StylableElement) => {
+            setEls((prevEls) => {
+              const els = prevEls.filter((el) =>
                 removedEl ? el !== removedEl : !exitingElSet.has(el)
               );
-              schedule(
-                () => setEls(els),
-                () => move && els.length && move(els)
-              );
-            })
-          );
+              startCommit();
+              startUpdate();
+              move && els.length && move(els);
+              applyCommit();
+              return els;
+            });
+            startCommit();
+            applyUpdate();
+            applyCommit();
+          };
+          exit(exitingEls, removeEls);
         }
       }
 
-      if (move_) {
+      if (move) {
         const movingEls = prevEls;
-        movingEls.length && integrations.push(() => move_(movingEls));
+        movingEls.length && move(movingEls);
       }
     }
 
-    setTimeout(() => {
-      schedule(
-        () => setEls(els),
-        () => {
-          for (const integration of integrations) integration();
-        }
-      );
+    applyCommit();
+    setEls(els);
+    onMount(() => {
+      startCommit();
+      applyUpdate();
+      applyCommit();
     });
-
     return elSet;
   }, new Set(getEls()));
 
