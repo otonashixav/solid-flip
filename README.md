@@ -211,6 +211,10 @@ Takes a callback, used to schedule element operations between integrations. When
 
 ## Changelog
 
+### 0.8.4
+
+- Properly update the scheduler.
+
 ### 0.8.3
 
 - Remove setTimeout inside removeEls.
