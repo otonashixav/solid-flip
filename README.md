@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=-2008351512&version=1.1.6)
+[Playground Link](https://playground.solidjs.com/?hash=-1252184600&version=1.1.6)
 
 ```tsx
 <TransitionGroup
@@ -204,6 +204,10 @@ Sets the `position`, `left`, `top`, `width`, `height` and `margin` properties su
 Any callbacks run in an `onMount` will run after entering elements have been mounted.
 
 ## Changelog
+
+### 0.9.1
+
+- Fix types for `removeEls`.
 
 ### 0.9.0
 
