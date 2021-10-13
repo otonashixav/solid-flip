@@ -8,7 +8,7 @@ export interface EnterIntegration {
 }
 export type ExitIntegration = (
   exitingElements: StylableElement[],
-  removeElements: (exitingElement?: StylableElement) => void
+  removeElements: (exitingElement?: StylableElement | StylableElement[]) => void
 ) => void;
 export type InitialIntegration = (
   initialElements: readonly StylableElement[]
