@@ -1,7 +1,9 @@
 import { onMount } from "solid-js";
 import { StylableElement, MovedElement } from "./types";
 
-export function filterMovedEls(els: StylableElement[]): MovedElement[] {
+export function filterMovedEls(
+  els: readonly StylableElement[]
+): MovedElement[] {
   const movableEls: MovedElement[] = [];
   for (const el of els) {
     if (el.isConnected) {
@@ -23,7 +25,7 @@ export function filterMovedEls(els: StylableElement[]): MovedElement[] {
   return movedEls;
 }
 
-export function detachEls(els: StylableElement[]): void {
+export function detachEls(els: readonly StylableElement[]): void {
   const detachableEls: {
     el: StylableElement;
     left: number;

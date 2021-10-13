@@ -138,11 +138,11 @@ export function animateExit(
   };
 }
 
-function addClasses(els: StylableElement[], ...classes: string[]) {
+function addClasses(els: readonly StylableElement[], ...classes: string[]) {
   for (const el of els) el.classList.add(...classes);
 }
 
-function removeClasses(els: StylableElement[], ...classes: string[]) {
+function removeClasses(els: readonly StylableElement[], ...classes: string[]) {
   for (const el of els) el.classList.remove(...classes);
 }
 
@@ -239,7 +239,7 @@ export function cssEnter(
   const classLists = splitClasses(classes, true);
   const enter = cssIntegration(classLists, options, true);
   return Object.assign(enter, {
-    initial: (els: StylableElement[]) =>
+    initial: (els: readonly StylableElement[]) =>
       addClasses(els, ...classLists.toClasses),
   });
 }
