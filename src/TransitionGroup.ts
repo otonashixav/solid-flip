@@ -83,7 +83,7 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
               const set = removedEl
                 ? new Set(Array.isArray(removedEl) ? removedEl : [removedEl])
                 : exitingElSet;
-              const els = untrack(getEls).filter((el) => set.has(el));
+              const els = untrack(getEls).filter((el) => !set.has(el));
               move && els.length && move(els);
               setEls(els);
               onMount(dispose);
