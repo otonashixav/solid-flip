@@ -199,15 +199,9 @@ Filters an array of elements to just those which have moved after the DOM update
 
 Sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit.
 
-## Scheduling
+### onMount
 
-### onUpdate
-
-Takes a callback, used to schedule element operations between integrations. When called within an integration, causes the callback passed to be called after the DOM updates.
-
-### onCommit
-
-Takes a callback, used to schedule element operations between integrations. When called within an integration, causes the callback passed to be called after all the integrations have returned. When called within `onUpdate`, causes the callback passed to be called after all `onUpdate` callbacks have been called. Any style changes to elements via any method should be wrapped in an `onCommit`, so that integrations that need to read values from elements read correctly before any changes have been applied.
+Any callbacks run in an `onMount` will run after entering elements have been mounted.
 
 ## Changelog
 
