@@ -56,14 +56,14 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
     } else {
       const prevEls = untrack(getEls);
 
-      if (move) {
-        const movingEls = prevEls;
-        movingEls.length && move(movingEls);
-      }
-
       if (enter) {
         const enteringEls = els.filter((el) => !prevElSet.has(el));
         enteringEls.length && enter(enteringEls);
+      }
+
+      if (move) {
+        const movingEls = prevEls;
+        movingEls.length && move(movingEls);
       }
 
       if (exit) {
