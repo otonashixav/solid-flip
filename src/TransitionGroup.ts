@@ -5,9 +5,9 @@ import {
   JSX,
   createComputed,
   Component,
+  createRoot,
   onMount,
 } from "solid-js";
-import { startCommit, startUpdate, applyCommit, applyUpdate } from "./schedule";
 import {
   EnterIntegration,
   ExitIntegration,
@@ -46,8 +46,6 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
     const els = resolvedToEls(resolved);
     const elSet = new Set(els);
 
-    startCommit();
-    startUpdate();
     if (isInitial) {
       if (els.length) {
         isInitial = false;
@@ -57,6 +55,11 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
       }
     } else {
       const prevEls = untrack(getEls);
+
+      if (move) {
+        const movingEls = prevEls;
+        movingEls.length && move(movingEls);
+      }
 
       if (enter) {
         const enteringEls = els.filter((el) => !prevElSet.has(el));
@@ -74,37 +77,21 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
           // We have els exiting
           const exitingEls = [...exitingElSet];
           const removeEls = (removedEl?: StylableElement) => {
-            setEls((prevEls) => {
-              const els = prevEls.filter((el) =>
+            createRoot((dispose) => {
+              const els = untrack(getEls).filter((el) =>
                 removedEl ? el !== removedEl : !exitingElSet.has(el)
               );
-              startCommit();
-              startUpdate();
               move && els.length && move(els);
-              applyCommit();
-              return els;
+              setEls(els);
+              onMount(dispose);
             });
-            startCommit();
-            applyUpdate();
-            applyCommit();
           };
           exit(exitingEls, removeEls);
         }
       }
-
-      if (move) {
-        const movingEls = prevEls;
-        movingEls.length && move(movingEls);
-      }
     }
 
-    applyCommit();
     setEls(els);
-    onMount(() => {
-      startCommit();
-      applyUpdate();
-      applyCommit();
-    });
     return elSet;
   }, new Set(getEls()));
 

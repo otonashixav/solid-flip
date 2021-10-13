@@ -1,4 +1,4 @@
-import { onCommit, onUpdate } from "./schedule";
+import { onMount } from "solid-js";
 import { StylableElement, MovedElement } from "./types";
 
 export function filterMovedEls(els: StylableElement[]): MovedElement[] {
@@ -10,7 +10,7 @@ export function filterMovedEls(els: StylableElement[]): MovedElement[] {
     }
   }
   const movedEls: MovedElement[] = [];
-  onUpdate(() => {
+  onMount(() => {
     for (const [el, prevX, prevY] of movableEls) {
       if (el.isConnected) {
         const { x, y } = el.getBoundingClientRect();
@@ -50,15 +50,10 @@ export function detachEls(els: StylableElement[]): void {
       });
     }
   }
-  onCommit(() => {
-    for (const { el, ...offsets } of detachableEls) {
-      el.style.setProperty("position", "absolute");
-      el.style.setProperty("margin", "0px");
-      for (const name in offsets)
-        el.style.setProperty(
-          name,
-          `${offsets[name as keyof typeof offsets]}px`
-        );
-    }
-  });
+  for (const { el, ...offsets } of detachableEls) {
+    el.style.setProperty("position", "absolute");
+    el.style.setProperty("margin", "0px");
+    for (const name in offsets)
+      el.style.setProperty(name, `${offsets[name as keyof typeof offsets]}px`);
+  }
 }

@@ -1,4 +1,4 @@
-import { onCommit, onUpdate } from "./schedule";
+import { onMount } from "solid-js";
 import {
   EnterIntegration,
   ExitIntegration,
@@ -54,11 +54,9 @@ export function animateMove(
   const animateEl = animate;
   return (els) => {
     const movedEls = filterMovedEls(els);
-    onUpdate(() =>
-      onCommit(() => {
-        for (const movedEl of movedEls) animateEl(...movedEl);
-      })
-    );
+    onMount(() => {
+      for (const movedEl of movedEls) animateEl(...movedEl);
+    });
   };
 }
 
@@ -88,11 +86,9 @@ export function animateEnter(
 
   const animateEl = animate;
   return (els) =>
-    onUpdate(() =>
-      onCommit(() => {
-        for (const el of els) animateEl(el);
-      })
-    );
+    onMount(() => {
+      for (const el of els) animateEl(el);
+    });
 }
 
 const DEFAULT_EXIT_KEYFRAMES: (el: StylableElement) => KeyframeType = (el) => ({
@@ -133,14 +129,12 @@ export function animateExit(
 
   return (els, removeEls) => {
     if (absolute) detachEls(els);
-    onCommit(() => {
-      if (separate) {
-        for (const el of els) animateEl(el).then(() => removeEls(el));
-      } else {
-        animateEl(els.shift() as StylableElement).then(() => removeEls());
-        for (const el of els) animateEl(el);
-      }
-    });
+    if (separate) {
+      for (const el of els) animateEl(el).then(() => removeEls(el));
+    } else {
+      animateEl(els.shift() as StylableElement).then(() => removeEls());
+      for (const el of els) animateEl(el);
+    }
   };
 }
 
@@ -192,43 +186,39 @@ function cssIntegration(
   const { fromClasses, activeClasses, toClasses } = classLists;
   const { separate, type = "both" } = options;
   return (els, removeEls) => {
-    onCommit(() => {
-      if (!isEnter)
-        for (const el of els) el.dispatchEvent(new CustomEvent("cssexit"));
-      addClasses(els, ...fromClasses, ...activeClasses);
-    });
-    onUpdate(() =>
-      onCommit(() =>
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            removeClasses(els, ...fromClasses);
-            addClasses(els, ...toClasses);
-            const registerEventHandler = (el: StylableElement) => {
-              const handleEvent = ({ target }: Event) => {
-                if (target !== el) return;
-                removeEls
-                  ? separate
-                    ? removeEls(el)
-                    : removeEls()
-                  : separate
-                  ? el.classList.remove(...activeClasses)
-                  : removeClasses(els, ...activeClasses);
-                isEnter && el.removeEventListener("cssexit", handleEvent);
-                type !== "animationend" &&
-                  el.removeEventListener("transitionend", handleEvent);
-                type !== "transitionend" &&
-                  el.removeEventListener("animationend", handleEvent);
-              };
-              isEnter && el.addEventListener("cssexit", handleEvent);
+    if (!isEnter)
+      for (const el of els) el.dispatchEvent(new CustomEvent("cssexit"));
+    addClasses(els, ...fromClasses, ...activeClasses);
+    onMount(() =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          removeClasses(els, ...fromClasses);
+          addClasses(els, ...toClasses);
+          const registerEventHandler = (el: StylableElement) => {
+            const handleEvent = ({ target }: Event) => {
+              if (target !== el) return;
+              removeEls
+                ? separate
+                  ? removeEls(el)
+                  : removeEls()
+                : separate
+                ? el.classList.remove(...activeClasses)
+                : removeClasses(els, ...activeClasses);
+              isEnter && el.removeEventListener("cssexit", handleEvent);
               type !== "animationend" &&
-                el.addEventListener("transitionend", handleEvent);
+                el.removeEventListener("transitionend", handleEvent);
               type !== "transitionend" &&
-                el.addEventListener("animationend", handleEvent);
+                el.removeEventListener("animationend", handleEvent);
             };
-            if (separate) for (const el of els) registerEventHandler(el);
-            else registerEventHandler(els[0]);
-          })
-        )
+            isEnter && el.addEventListener("cssexit", handleEvent);
+            type !== "animationend" &&
+              el.addEventListener("transitionend", handleEvent);
+            type !== "transitionend" &&
+              el.addEventListener("animationend", handleEvent);
+          };
+          if (separate) for (const el of els) registerEventHandler(el);
+          else registerEventHandler(els[0]);
+        })
       )
     );
   };
