@@ -76,11 +76,14 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
         if (exitingElSet.size) {
           // We have els exiting
           const exitingEls = [...exitingElSet];
-          const removeEls = (removedEl?: StylableElement) => {
+          const removeEls = (
+            removedEl?: StylableElement | StylableElement[]
+          ) => {
             createRoot((dispose) => {
-              const els = untrack(getEls).filter((el) =>
-                removedEl ? el !== removedEl : !exitingElSet.has(el)
-              );
+              const set = removedEl
+                ? new Set(Array.isArray(removedEl) ? removedEl : [removedEl])
+                : exitingElSet;
+              const els = untrack(getEls).filter((el) => set.has(el));
               move && els.length && move(els);
               setEls(els);
               onMount(dispose);
