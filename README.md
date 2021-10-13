@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=-374258646&version=1.1.6)
+[Playground Link](https://playground.solidjs.com/?hash=-2008351512&version=1.1.6)
 
 ```tsx
 <TransitionGroup
@@ -210,6 +210,12 @@ Takes a callback, used to schedule element operations between integrations. When
 Takes a callback, used to schedule element operations between integrations. When called within an integration, causes the callback passed to be called after all the integrations have returned. When called within `onUpdate`, causes the callback passed to be called after all `onUpdate` callbacks have been called. Any style changes to elements via any method should be wrapped in an `onCommit`, so that integrations that need to read values from elements read correctly before any changes have been applied.
 
 ## Changelog
+
+### 0.9.0
+
+- Remove `onCommit` and `onUpdate`. Instead, use `onMount` for the same effect as `onUpdate`. `onCommit` has no new equivalent as there is no common use for it, though `createRenderEffect` should always run before `onMount`.
+- Added `readonly` to `InitialIntegration` and `MoveIntegration` els parameters, since the passed array should not be modified. This makes the interface less clean, but this is mostly preferable to cloning before passing.
+- `removeEls` on `ExitIntegration` now accepts an optional array of elements in addition to an optional single element.
 
 ### 0.8.5
 
