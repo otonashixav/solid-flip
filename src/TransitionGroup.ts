@@ -31,8 +31,8 @@ export interface TransitionGroupProps {
 }
 
 export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
-  const enterInitial = props.initial;
-  let { move, enter, exit } = {} as TransitionGroupProps;
+  let { move, enter, exit, initial } = {} as TransitionGroupProps;
+  createComputed(() => (initial = props.initial));
   createComputed(() => (move = props.move));
   createComputed(() => (enter = props.enter));
   createComputed(() => (exit = props.exit));
@@ -49,9 +49,9 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
     if (isInitial) {
       if (els.length) {
         isInitial = false;
-        if (typeof enterInitial === "function") enterInitial(els);
-        else if (enterInitial === true && enter) enter(els);
-        else if (enterInitial !== false && enter?.initial) enter.initial(els);
+        if (typeof initial === "function") initial(els);
+        else if (initial === true && enter) enter(els);
+        else if (initial !== false && enter?.initial) enter.initial(els);
       }
     } else {
       const prevEls = untrack(getEls);
