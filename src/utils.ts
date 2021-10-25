@@ -25,7 +25,7 @@ export function filterMovedEls(els: StylableElement[]): MovedElement[] {
   return movedEls;
 }
 
-export function undetachEls(els: readonly StylableElement[]): void {
+export function undetachEls(els: StylableElement[]): void {
   for (const el of els) {
     for (const property of [
       "position",
