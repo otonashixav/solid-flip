@@ -59,7 +59,7 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
   const batchExit = (els: StylableElement[]) => {
     if (!batchedExitedEls.size) {
       requestAnimationFrame(() => {
-        batchedExitedEls.size && finishExitEls([...batchedExitedEls]);
+        batchedExitedEls.size && finishExitEls(batchedExitedEls);
         batchedExitedEls.clear();
       });
     }
@@ -68,11 +68,10 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
 
   const finishEnterEls = (els: StylableElement[]) =>
     onEntered && onEntered(els);
-  const finishExitEls = (removedEls: StylableElement[]) => {
-    onExited && onExited(removedEls);
+  const finishExitEls = (removedEls: Set<StylableElement>) => {
+    onExited && onExited([...removedEls]);
     createRoot((dispose) => {
-      const set = new Set(removedEls);
-      const els = untrack(getEls).filter((el) => !set.has(el));
+      const els = untrack(getEls).filter((el) => !removedEls.has(el));
       move && els.length && move(els);
       setEls(els);
       setTimeout(dispose);
