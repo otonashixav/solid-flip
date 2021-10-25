@@ -93,6 +93,7 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
         else if (initial === true && enter) enter(els, finishEnterEls);
         else if (initial !== false && enter?.initial)
           enter.initial(els, finishEnterEls);
+        else onEntered && onEntered(els);
       }
     } else {
       const prevEls = untrack(getEls);
