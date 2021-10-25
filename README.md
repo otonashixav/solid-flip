@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=-1252184600&version=1.1.6)
+[Playground Link](https://playground.solidjs.com/?hash=-1264533323&version=1.1.7)
 
 ```tsx
 <TransitionGroup
@@ -199,11 +199,22 @@ Filters an array of elements to just those which have moved after the DOM update
 
 Sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit.
 
+### undetachEls
+
+Clears the `position`, `left`, `top`, `width`, `height` and `margin` properties.
+
 ### onMount
 
 Any callbacks run in an `onMount` will run after entering elements have been mounted.
 
 ## Changelog
+
+### 0.10.0
+
+- Added `onEntering`, `onEntered`, `onExiting`, `onExited` listeners. Note that while these will be called with arrays, `onEntered` is (currently) always called with single element arrays due to implementation details.
+- Made it possible to use already created elements in `TransitionGroup`, allowed exiting elements to be reentered and added other necessary changes to allow aborting exiting.
+- Made the move integration run before enter, instead of before enter and exit, and delayed the final step of it using nested `onMount`s.
+- Removed `separate`; everything is "separate" now, but exiting elements will be batched before exiting to try to reduce the performance impact of this change.
 
 ### 0.9.1
 
