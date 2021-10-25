@@ -8,5 +8,5 @@ export type ExitIntegration = (
 ) => void;
 export type EnterIntegration = (
   enteringElements: StylableElement[],
-  finish: (elements: StylableElement[]) => void
+  finish?: ((elements: StylableElement[]) => void) | undefined
 ) => void;

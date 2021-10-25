@@ -110,8 +110,10 @@ export function animateEnter(
         }
         let cancelled = false;
         el.dispatchEvent(CANCEL_EVENT);
-        el.addEventListener?.(CANCEL_EVENT_TYPE, () => (cancelled = true));
-        animateEl(el).then(() => cancelled || finish([el]));
+        if (finish) {
+          el.addEventListener?.(CANCEL_EVENT_TYPE, () => (cancelled = true));
+          animateEl(el).then(() => cancelled || finish([el]));
+        }
       }
     });
   };
