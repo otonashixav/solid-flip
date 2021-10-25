@@ -1,12 +1,11 @@
-export type StylableElement = Element & ElementCSSInlineStyle;
 export type KeyframeType = Keyframe[] | PropertyIndexedKeyframes;
-export type MovedElement = [el: StylableElement, x: number, y: number];
-export type MoveIntegration = (allElements: StylableElement[]) => void;
+export type MovedElement = [el: Element, x: number, y: number];
+export type MoveIntegration = (allElements: Element[]) => void;
 export type ExitIntegration = (
-  exitingElements: StylableElement[],
-  finish: (elements: StylableElement[]) => void
+  exitingElements: Element[],
+  finish: (elements: Element[]) => void
 ) => void;
 export type EnterIntegration = (
-  enteringElements: StylableElement[],
-  finish?: ((elements: StylableElement[]) => void) | undefined
+  enteringElements: Element[],
+  finish?: ((elements: Element[]) => void) | undefined
 ) => void;

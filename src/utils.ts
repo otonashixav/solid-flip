@@ -1,7 +1,7 @@
 import { onMount } from "solid-js";
-import { StylableElement, MovedElement } from "./types";
+import { MovedElement } from "./types";
 
-export function filterMovedEls(els: StylableElement[]): MovedElement[] {
+export function filterMovedEls(els: Element[]): MovedElement[] {
   const movableEls: MovedElement[] = [];
   for (const el of els) {
     if (el.isConnected) {
@@ -25,23 +25,26 @@ export function filterMovedEls(els: StylableElement[]): MovedElement[] {
   return movedEls;
 }
 
-export function undetachEls(els: StylableElement[]): void {
+export function undetachEls(els: Element[]): void {
   for (const el of els) {
-    for (const property of [
-      "position",
-      "margin",
-      "left",
-      "top",
-      "width",
-      "height",
-    ])
-      el.style.removeProperty(property);
+    const s = (el as { style?: CSSStyleDeclaration }).style;
+    if (s)
+      for (const property of [
+        "position",
+        "margin",
+        "left",
+        "top",
+        "width",
+        "height",
+      ]) {
+        s.removeProperty(property);
+      }
   }
 }
 
-export function detachEls(els: StylableElement[]): void {
+export function detachEls(els: Element[]): void {
   const detachableEls: {
-    el: StylableElement;
+    el: Element;
     left: number;
     top: number;
     width: number;
@@ -67,9 +70,12 @@ export function detachEls(els: StylableElement[]): void {
     }
   }
   for (const { el, ...offsets } of detachableEls) {
-    el.style.setProperty("position", "absolute");
-    el.style.setProperty("margin", "0px");
-    for (const name in offsets)
-      el.style.setProperty(name, `${offsets[name as keyof typeof offsets]}px`);
+    const s = (el as { style?: CSSStyleDeclaration }).style;
+    if (s) {
+      s.setProperty("position", "absolute");
+      s.setProperty("margin", "0px");
+      for (const name in offsets)
+        s.setProperty(name, `${offsets[name as keyof typeof offsets]}px`);
+    }
   }
 }

@@ -46,7 +46,7 @@ pnpm i @otonashixav/solid-flip
 
 ## `<TransitionGroup>`
 
-The `TransitionGroup` component should wrap elements to be transitioned. Only elements with a `style` property implementing `CSSStyleDeclaration` e.g. HTMLElements and SVGElements are supported.
+The `TransitionGroup` component should wrap elements to be transitioned. Only Elements (not TextNodes or other non-Element Nodes) are supported.
 
 ### props
 
@@ -91,11 +91,14 @@ function animateEnter(
         keyframes: KeyframeType | ((el: StylableElement) => KeyframeType);
         options?: KeyframeAnimationOptions;
       }
-    | ((el: StylableElement) => void) = {}
+    | ((el: StylableElement) => Promise<unknown>) = {}
 ): EnterIntegration;
 ```
 
-`keyframes` defaults to a simple fade in animation.
+- `animate` must return a Promise if provided with a callback. The elements will be removed once the Promise resolves.
+- `keyframes` defaults to a simple fade out animation.
+  `unabsolute`: See [`undetachEls`](#undetachEls).
+- `reverseExit: true` causes the element to enter by reversing ongoing exit animations, identified by `id: exit`, instead of entering with the provided animation.
 
 ### animateExit
 
@@ -117,9 +120,8 @@ function animateExit(
 
 - `animate` must return a Promise if provided with a callback. The elements will be removed once the Promise resolves.
 - `keyframes` defaults to a simple fade out animation.
-- `absolute: true` sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit.
-- `reverseEnter: true` causes the element to exit by reversing the first ongoing enter animation, identified by `id: enter`, instead of exiting with the provided animation. It also sets `separate: true`.
-- `separate: true` causes each element to be removed when its own animation has completed, instead of using a single animation to remove all the elements. This is useful if your animations have different durations, but otherwise less performant.
+  `absolute`: See [`detachEls`](#detachEls).
+- `reverseEnter: true` causes the element to exit by reversing ongoing enter animations, identified by `id: enter`, instead of exiting with the provided animation.
 
 ### animateMove
 
@@ -145,11 +147,6 @@ These add and remove classes to transition elements. These accept a classes obje
 - `active` - Classes that should be present during the transition. These usually provide css animations.
 - `to` - Classes that are added after the `from` classes are removed, and persist after the transition ends.
 
-They also all accept these options:
-
-- `separate` - Listens to events on all elements, instead of just the first one. Useful if your transitions finish at different times, but otherwise less performant.
-- `type` - The type of events to listen to, indicating the end of the transition. Defaults to `both`.
-
 ### cssEnter
 
 ```ts
@@ -161,11 +158,14 @@ function cssEnter(
     to?: string;
   },
   options: {
-    separate?: boolean;
+    unabsolute?: boolean;
     type?: "animationend" | "transitionend" | "both";
   } = {}
 ): EnterIntegration;
 ```
+
+`unabsolute`: See [`undetachEls`](#undetachEls).
+`type`: Which event to listen to (defaults to both).
 
 ### cssExit
 
@@ -179,13 +179,13 @@ function cssExit(
   },
   options: {
     absolute?: boolean;
-    separate?: boolean;
     type?: "animationend" | "transitionend" | "both";
   } = {}
 ): ExitIntegration;
 ```
 
-`absolute: true` sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit.
+`absolute`: See [`detachEls`](#detachEls).
+`type`: Which event to listen to (defaults to both).
 
 ## Utilities
 
@@ -197,11 +197,11 @@ Filters an array of elements to just those which have moved after the DOM update
 
 ### detachEls
 
-Sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit.
+Sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit. Only elements with a `style` property are affected.
 
 ### undetachEls
 
-Clears the `position`, `left`, `top`, `width`, `height` and `margin` properties.
+Clears the `position`, `left`, `top`, `width`, `height` and `margin` properties. Only elements with a `style` property are affected.
 
 ### onMount
 
@@ -215,6 +215,7 @@ Any callbacks run in an `onMount` will run after entering elements have been mou
 - Made it possible to use already created elements in `TransitionGroup`, allowed exiting elements to be reentered and added other necessary changes to allow aborting exiting.
 - Made the move integration run before enter, instead of before enter and exit, and delayed the final step of it using nested `onMount`s.
 - Removed `separate`; everything is "separate" now, but exiting elements will be batched before exiting to try to reduce the performance impact of this change.
+- Simplified various types.
 
 ### 0.9.1
 

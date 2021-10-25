@@ -4,7 +4,6 @@ import {
   ExitIntegration,
   KeyframeType,
   MoveIntegration,
-  StylableElement,
 } from "./types";
 import { detachEls, filterMovedEls, undetachEls } from "./utils";
 
@@ -18,7 +17,7 @@ const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
 };
 
 const DEFAULT_MOVE_KEYFRAMES = (
-  _el: StylableElement,
+  _el: Element,
   x: number,
   y: number
 ): KeyframeType => ({
@@ -28,20 +27,20 @@ const DEFAULT_MOVE_KEYFRAMES = (
 
 function getAnimate<T extends unknown[], U extends Promise<unknown> | void>(
   animate:
-    | ((el: StylableElement, ...params: T) => U)
+    | ((el: Element, ...params: T) => U)
     | {
         keyframes?:
           | KeyframeType
-          | ((el: StylableElement, ...params: T) => KeyframeType);
+          | ((el: Element, ...params: T) => KeyframeType);
         options?: KeyframeAnimationOptions;
       },
   config: {
     defaultKeyframes:
       | ([] extends T ? KeyframeType : never)
-      | ((el: StylableElement, ...params: T) => KeyframeType);
+      | ((el: Element, ...params: T) => KeyframeType);
     configOptions?: KeyframeAnimationOptions;
   }
-): (el: StylableElement, ...params: T) => U {
+): (el: Element, ...params: T) => U {
   if (typeof animate === "function") return animate;
   const { defaultKeyframes, configOptions } = config;
   const { keyframes = defaultKeyframes, options } = animate;
@@ -55,10 +54,10 @@ function getAnimate<T extends unknown[], U extends Promise<unknown> | void>(
 export function animateMove(
   animate:
     | {
-        keyframes?: (el: StylableElement, x: number, y: number) => KeyframeType;
+        keyframes?: (el: Element, x: number, y: number) => KeyframeType;
         options?: KeyframeAnimationOptions;
       }
-    | ((el: StylableElement, x: number, y: number) => void) = {}
+    | ((el: Element, x: number, y: number) => void) = {}
 ): MoveIntegration {
   const animateEl = getAnimate(animate, {
     defaultKeyframes: DEFAULT_MOVE_KEYFRAMES,
@@ -73,19 +72,17 @@ export function animateMove(
   };
 }
 
-const DEFAULT_ENTER_KEYFRAMES: (el: StylableElement) => KeyframeType = (
-  el
-) => ({
+const DEFAULT_ENTER_KEYFRAMES: (el: Element) => KeyframeType = (el) => ({
   opacity: ["0", getComputedStyle(el).opacity],
 });
 
 export function animateEnter(
   animate:
     | {
-        keyframes?: KeyframeType | ((el: StylableElement) => KeyframeType);
+        keyframes?: KeyframeType | ((el: Element) => KeyframeType);
         options?: KeyframeAnimationOptions;
       }
-    | ((el: StylableElement) => Promise<unknown>) = {},
+    | ((el: Element) => Promise<unknown>) = {},
   options: {
     unabsolute?: boolean;
     reverseExit?: boolean;
@@ -94,7 +91,7 @@ export function animateEnter(
   const { unabsolute, reverseExit } = options;
   const animateEl = getAnimate(animate, {
     defaultKeyframes: DEFAULT_ENTER_KEYFRAMES,
-    configOptions: { id: "flipenter" },
+    configOptions: { id: "enter" },
   });
   return (els, finish) => {
     if (unabsolute) undetachEls(els);
@@ -102,9 +99,9 @@ export function animateEnter(
       for (const el of els) {
         if (reverseExit) {
           for (const animation of el.getAnimations()) {
-            if (animation.id === "flipexit") {
+            if (animation.id === "exit") {
               animation.reverse();
-              animation.id = "flipenter";
+              animation.id = "enter";
             }
           }
         }
@@ -119,17 +116,17 @@ export function animateEnter(
   };
 }
 
-const DEFAULT_EXIT_KEYFRAMES: (el: StylableElement) => KeyframeType = (el) => ({
+const DEFAULT_EXIT_KEYFRAMES: (el: Element) => KeyframeType = (el) => ({
   opacity: [getComputedStyle(el).opacity, "0"],
 });
 
 export function animateExit(
   animate:
     | {
-        keyframes?: KeyframeType | ((el: StylableElement) => KeyframeType);
+        keyframes?: KeyframeType | ((el: Element) => KeyframeType);
         options?: KeyframeAnimationOptions;
       }
-    | ((el: StylableElement) => Promise<unknown>) = {},
+    | ((el: Element) => Promise<unknown>) = {},
   options: {
     absolute?: boolean;
     reverseEnter?: boolean;
@@ -138,7 +135,7 @@ export function animateExit(
   const { absolute, reverseEnter } = options;
   const animateEl = getAnimate(animate, {
     defaultKeyframes: DEFAULT_EXIT_KEYFRAMES,
-    configOptions: { id: "flipexit" },
+    configOptions: { id: "exit" },
   });
 
   return (els, finish) => {
@@ -146,9 +143,9 @@ export function animateExit(
     for (const el of els) {
       if (reverseEnter) {
         for (const animation of el.getAnimations()) {
-          if (animation.id === "flipenter") {
+          if (animation.id === "enter") {
             animation.reverse();
-            animation.id = "flipexit";
+            animation.id = "exit";
           }
         }
       }
@@ -160,11 +157,11 @@ export function animateExit(
   };
 }
 
-function addClasses(els: StylableElement[], ...classes: string[]) {
+function addClasses(els: Element[], ...classes: string[]) {
   for (const el of els) el.classList.add(...classes);
 }
 
-function removeClasses(els: StylableElement[], ...classes: string[]) {
+function removeClasses(els: Element[], ...classes: string[]) {
   for (const el of els) el.classList.remove(...classes);
 }
 
@@ -199,7 +196,7 @@ function cssIntegration(
   options: {
     type?: "animationend" | "transitionend" | "both";
   }
-): (els: StylableElement[], finish?: (el: StylableElement[]) => void) => void {
+): (els: Element[], finish?: (el: Element[]) => void) => void {
   const { fromClasses, activeClasses, toClasses } = classLists;
   const { type = "both" } = options;
   return (els, finish) => {
@@ -209,7 +206,7 @@ function cssIntegration(
       requestAnimationFrame(() => {
         removeClasses(els, ...fromClasses);
         addClasses(els, ...toClasses);
-        const registerEventHandler = (el: StylableElement) => {
+        const registerEventHandler = (el: Element) => {
           const handleEvent = ({ target, type }: Event) => {
             if (target !== el) return;
             el.removeEventListener(CANCEL_EVENT_TYPE, handleEvent);
