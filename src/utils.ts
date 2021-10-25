@@ -1,9 +1,7 @@
 import { onMount } from "solid-js";
 import { StylableElement, MovedElement } from "./types";
 
-export function filterMovedEls(
-  els: readonly StylableElement[]
-): MovedElement[] {
+export function filterMovedEls(els: StylableElement[]): MovedElement[] {
   const movableEls: MovedElement[] = [];
   for (const el of els) {
     if (el.isConnected) {
@@ -12,20 +10,36 @@ export function filterMovedEls(
     }
   }
   const movedEls: MovedElement[] = [];
-  onMount(() => {
-    for (const [el, prevX, prevY] of movableEls) {
-      if (el.isConnected) {
-        const { x, y } = el.getBoundingClientRect();
-        const dX = prevX - x;
-        const dY = prevY - y;
-        if (dX || dY) movedEls.push([el, dX, dY]);
+  onMount(() =>
+    onMount(() => {
+      for (const [el, prevX, prevY] of movableEls) {
+        if (el.isConnected) {
+          const { x, y } = el.getBoundingClientRect();
+          const dX = prevX - x;
+          const dY = prevY - y;
+          if (dX || dY) movedEls.push([el, dX, dY]);
+        }
       }
-    }
-  });
+    })
+  );
   return movedEls;
 }
 
-export function detachEls(els: readonly StylableElement[]): void {
+export function undetachEls(els: readonly StylableElement[]): void {
+  for (const el of els) {
+    for (const property of [
+      "position",
+      "margin",
+      "left",
+      "top",
+      "width",
+      "height",
+    ])
+      el.style.removeProperty(property);
+  }
+}
+
+export function detachEls(els: StylableElement[]): void {
   const detachableEls: {
     el: StylableElement;
     left: number;

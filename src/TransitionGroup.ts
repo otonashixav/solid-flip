@@ -6,12 +6,10 @@ import {
   createComputed,
   Component,
   createRoot,
-  onMount,
 } from "solid-js";
 import {
   EnterIntegration,
   ExitIntegration,
-  InitialIntegration,
   MoveIntegration,
   StylableElement,
 } from "./types";
@@ -24,21 +22,62 @@ function resolvedToEls(resolved: JSX.Element) {
 
 export interface TransitionGroupProps {
   children: JSX.Element;
-  enter?: EnterIntegration;
+  enter?: EnterIntegration & { initial?: EnterIntegration };
   exit?: ExitIntegration | ExitIntegration;
   move?: MoveIntegration;
-  initial?: boolean | InitialIntegration;
+  onEntering?: (els: StylableElement[]) => void;
+  onEntered?: (els: StylableElement[]) => void;
+  onExiting?: (els: StylableElement[]) => void;
+  onExited?: (els: StylableElement[]) => void;
+  initial?: boolean | EnterIntegration;
 }
 
 export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
-  let { move, enter, exit, initial } = {} as TransitionGroupProps;
+  let {
+    move,
+    enter,
+    exit,
+    initial,
+    onEntering,
+    onEntered,
+    onExiting,
+    onExited,
+  } = {} as TransitionGroupProps;
   createComputed(() => (initial = props.initial));
   createComputed(() => (move = props.move));
   createComputed(() => (enter = props.enter));
   createComputed(() => (exit = props.exit));
+  createComputed(() => (onEntering = props.onEntering));
+  createComputed(() => (onEntered = props.onEntered));
+  createComputed(() => (onExiting = props.onExiting));
+  createComputed(() => (onExited = props.onExited));
 
   const getResolved = children(() => props.children);
   const [getEls, setEls] = createSignal<StylableElement[]>([]);
+
+  const batchedExitedEls: Set<StylableElement> = new Set();
+  const batchExit = (els: StylableElement[]) => {
+    if (!batchedExitedEls.size) {
+      requestAnimationFrame(() => {
+        batchedExitedEls.size && finishExitEls([...batchedExitedEls]);
+        batchedExitedEls.clear();
+      });
+    }
+    for (const el of els) batchedExitedEls.add(el);
+  };
+
+  const finishEnterEls = (els: StylableElement[]) =>
+    onEntered && onEntered(els);
+  const finishExitEls = (removedEls: StylableElement[]) => {
+    onExited && onExited(removedEls);
+    createRoot((dispose) => {
+      const set = new Set(removedEls);
+      const els = untrack(getEls).filter((el) => !set.has(el));
+      move && els.length && move(els);
+      setEls(els);
+      setTimeout(dispose);
+    });
+  };
 
   let isInitial = true;
   createComputed((prevElSet: Set<StylableElement>) => {
@@ -49,21 +88,30 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
     if (isInitial) {
       if (els.length) {
         isInitial = false;
-        if (typeof initial === "function") initial(els);
-        else if (initial === true && enter) enter(els);
-        else if (initial !== false && enter?.initial) enter.initial(els);
+        onEntering && onEntering(els);
+        if (typeof initial === "function") initial(els, finishEnterEls);
+        else if (initial === true && enter) enter(els, finishEnterEls);
+        else if (initial !== false && enter?.initial)
+          enter.initial(els, finishEnterEls);
       }
     } else {
       const prevEls = untrack(getEls);
 
-      if (enter) {
-        const enteringEls = els.filter((el) => !prevElSet.has(el));
-        enteringEls.length && enter(enteringEls);
-      }
-
       if (move) {
         const movingEls = prevEls;
         movingEls.length && move(movingEls);
+      }
+
+      if (enter) {
+        const enteringEls = els.filter((el) => !prevElSet.has(el));
+        if (enteringEls.length) {
+          for (const el of enteringEls) {
+            if (batchedExitedEls.size) batchedExitedEls.delete(el);
+            else break;
+          }
+          onEntering && onEntering(enteringEls);
+          enter(enteringEls, finishEnterEls);
+        }
       }
 
       if (exit) {
@@ -76,20 +124,8 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
         if (exitingElSet.size) {
           // We have els exiting
           const exitingEls = [...exitingElSet];
-          const removeEls = (
-            removedEl?: StylableElement | StylableElement[]
-          ) => {
-            createRoot((dispose) => {
-              const set = removedEl
-                ? new Set(Array.isArray(removedEl) ? removedEl : [removedEl])
-                : exitingElSet;
-              const els = untrack(getEls).filter((el) => !set.has(el));
-              move && els.length && move(els);
-              setEls(els);
-              onMount(dispose);
-            });
-          };
-          exit(exitingEls, removeEls);
+          onExiting && onExiting(exitingEls);
+          exit(exitingEls, batchExit);
         }
       }
     }
