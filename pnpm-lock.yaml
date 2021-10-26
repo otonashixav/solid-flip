@@ -10,7 +10,7 @@ specifiers:
   prettier: ^2.4.1
   rollup: ^2.58.3
   rollup-preset-solid: ^1.0.1
-  solid-js: ^1.1.6
+  solid-js: ^1.1.7
   typescript: ^4.4.4
 
 devDependencies:
@@ -23,7 +23,7 @@ devDependencies:
   prettier: 2.4.1
   rollup: 2.58.3
   rollup-preset-solid: 1.0.1
-  solid-js: 1.1.6
+  solid-js: 1.1.7
   typescript: 4.4.4
 
 packages:
@@ -1481,8 +1481,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /solid-js/1.1.6:
-    resolution: {integrity: sha512-o7Nm654Q9vF+W293P1pxr2uv1dYhTjDM0tsYnmQTcNCvUcGMlW947SE3fx4pvH1Rcrjm549HkNy50Ors3D4+zQ==}
+  /solid-js/1.1.7:
+    resolution: {integrity: sha512-+zZOdR++hFJ/dEmAaHjyI5/tPqRdItOVKsnLuBOKajCqG0n/Bs3uc8xWf8CiYTI7OIwSt5A6ASM8KDoKehfs6w==}
     dev: true
 
   /source-map-support/0.5.20:
