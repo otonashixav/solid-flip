@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=-1264533323&version=1.1.7)
+[Playground Link](https://playground.solidjs.com/?hash=952320676&version=1.1.7)
 
 ```tsx
 <TransitionGroup
@@ -208,6 +208,10 @@ Clears the `position`, `left`, `top`, `width`, `height` and `margin` properties.
 Any callbacks run in an `onMount` will run after entering elements have been mounted.
 
 ## Changelog
+
+### 0.10.1
+
+- Call `onEntered` and `onExited` even when there are no `enter` and `exit` integrations.
 
 ### 0.10.0
 
