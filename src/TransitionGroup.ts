@@ -90,37 +90,34 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
       }
     } else {
       const prevEls = untrack(getEls);
+      const movingEls = prevEls;
+      const enteringEls = els.filter((el) => !prevElSet.has(el));
+      // Modify prevElSet in place since we have no more use for it
+      const exitingElSet = prevElSet;
+      for (const el of exitingElSet) elSet.has(el) && exitingElSet.delete(el);
+      // Persist previous els; they will be removed by removeEls
+      for (let i = 0; i < prevEls.length; i++)
+        !elSet.has(prevEls[i]) && els.splice(i, 0, prevEls[i]);
 
-      if (move) {
-        const movingEls = prevEls;
-        movingEls.length && move(movingEls);
+      if (movingEls.length) {
+        move && move(movingEls);
       }
 
-      if (enter) {
-        const enteringEls = els.filter((el) => !prevElSet.has(el));
-        if (enteringEls.length) {
-          for (const el of enteringEls) {
-            if (batchedExitedEls.size) batchedExitedEls.delete(el);
-            else break;
-          }
-          onEntering && onEntering(enteringEls);
-          enter(enteringEls, finishEnterEls);
+      if (enteringEls.length) {
+        onEntering && onEntering(enteringEls);
+        for (const el of enteringEls) {
+          if (batchedExitedEls.size) batchedExitedEls.delete(el);
+          else break;
         }
+        if (enter) enter(enteringEls, finishEnterEls);
+        else finishEnterEls(enteringEls);
       }
 
-      if (exit) {
-        // Modify prevElSet in place since we have no more use for it
-        const exitingElSet = prevElSet;
-        for (const el of exitingElSet) elSet.has(el) && exitingElSet.delete(el);
-        // Persist previous els; they will be removed by removeEls
-        for (let i = 0; i < prevEls.length; i++)
-          !elSet.has(prevEls[i]) && els.splice(i, 0, prevEls[i]);
-        if (exitingElSet.size) {
-          // We have els exiting
-          const exitingEls = [...exitingElSet];
-          onExiting && onExiting(exitingEls);
-          exit(exitingEls, batchExit);
-        }
+      if (exitingElSet.size) {
+        const exitingEls = [...exitingElSet];
+        onExiting && onExiting(exitingEls);
+        if (exit) exit(exitingEls, batchExit);
+        else finishExitEls(exitingElSet);
       }
     }
 
