@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=952320676&version=1.1.7)
+[Playground Link](https://playground.solidjs.com/?hash=-1273046538&version=1.2.2)
 
 ```tsx
 <TransitionGroup
@@ -197,17 +197,23 @@ Filters an array of elements to just those which have moved after the DOM update
 
 ### detachEls
 
-Sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit. Only elements with a `style` property are affected.
+Sets the `position`, `left`, `top`, `width`, `height` and `margin` properties such that the element is detached from the document flow with `position: absolute` and left where it was when it began to exit. Uses an animation with id `detach`.
 
 ### undetachEls
 
-Clears the `position`, `left`, `top`, `width`, `height` and `margin` properties. Only elements with a `style` property are affected.
+Clears the `position`, `left`, `top`, `width`, `height` and `margin` properties. Clears an animation with id `detach`.
 
 ### onMount
 
 Any callbacks run in an `onMount` will run after entering elements have been mounted.
 
 ## Changelog
+
+### 0.10.2
+
+- Improve detach by making it not set styles on the element.
+- Avoid multiple instances of batching.
+- Improve compatibility with Safari (?).
 
 ### 0.10.1
 
@@ -297,7 +303,7 @@ Any callbacks run in an `onMount` will run after entering elements have been mou
 - Renamed the `fixPositions` utility to `detachEls` and `filterMoved` to `filterMovedEls` to make it clearer what they do.
 - Added `type` as an option on css integrations to prevent the wrong type of event from triggering the listener.
 - A custom event is now used to remove enter classes instead of hijacking the `animationend` listener.
-- `StylableElement` is now `Element & ElementCSSInlineStyle` instead of `HTMLElement | SVGElement`.
+- `StylableElement` is now `Element & ElementCSSInlineStyle` instead of `Element`.
 - Allowed `initial` to be a callback, and allowed it to be provided via `enter` as well.
 - Added `reverseEnter` to `animateExit`, allowing enter animations to be reversed in causes where it looks cleaner to do so.
 
