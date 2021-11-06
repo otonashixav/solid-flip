@@ -29,30 +29,23 @@ export function filterMovedEls(
 
 export function undetachEls(els: (HTMLElement | SVGElement)[]): void {
   for (const el of els) {
-    const s = (el as { style?: CSSStyleDeclaration }).style;
-    if (s)
-      for (const property of [
-        "position",
-        "margin",
-        "left",
-        "top",
-        "width",
-        "height",
-      ]) {
-        s.removeProperty(property);
-      }
+    const animations = el.getAnimations();
+    for (const animation of animations) {
+      if (animation.id === "detach") animation.cancel();
+    }
   }
 }
 
 export function detachEls(els: (HTMLElement | SVGElement)[]): void {
-  const detachableEls: {
-    el: HTMLElement | SVGElement;
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-  }[] = [];
+  const detachableEls: [
+    el: HTMLElement | SVGElement,
+    left: string,
+    top: string,
+    width: string,
+    height: string
+  ][] = [];
   let parentX: number | undefined, parentY: number | undefined;
+  const animations = [];
   for (const el of els) {
     const parent = el.parentElement;
     if (parent) {
@@ -62,22 +55,24 @@ export function detachEls(els: (HTMLElement | SVGElement)[]): void {
         parentX = parentRect.x;
         parentY = parentRect.y;
       }
-      detachableEls.push({
-        el,
-        left: x - parentX,
-        top: y - parentY,
-        width: width,
-        height: height,
+      animations.push(() => {
+        const animation = el.animate(
+          [
+            {},
+            {
+              position: "absolute",
+              margin: "0px",
+              left: `${x - (parentX as number)}px`,
+              top: `${y - (parentY as number)}px`,
+              width: `${width}px`,
+              height: `${height}px`,
+            },
+          ],
+          { fill: "forwards" }
+        );
+        animation.id = "detach";
       });
     }
   }
-  for (const { el, ...offsets } of detachableEls) {
-    const s = (el as { style?: CSSStyleDeclaration }).style;
-    if (s) {
-      s.setProperty("position", "absolute");
-      s.setProperty("margin", "0px");
-      for (const name in offsets)
-        s.setProperty(name, `${offsets[name as keyof typeof offsets]}px`);
-    }
-  }
+  for (const animation of animations) animation();
 }
