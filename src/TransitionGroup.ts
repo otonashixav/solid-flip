@@ -11,7 +11,7 @@ import { EnterIntegration, ExitIntegration, MoveIntegration } from "./types";
 
 function resolvedToEls(resolved: JSX.Element) {
   return (Array.isArray(resolved) ? resolved : [resolved]).filter(
-    (el) => el instanceof HTMLElement || el instanceof SVGElement
+    (el) => el instanceof Element
   ) as Element[];
 }
 
