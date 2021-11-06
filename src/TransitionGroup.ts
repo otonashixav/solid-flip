@@ -50,12 +50,15 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
   const getResolved = children(() => props.children);
   const [getEls, setEls] = createSignal<Element[]>([]);
 
+  let isBatched = false;
   const batchedExitedEls: Set<Element> = new Set();
   const batchExit = (els: Element[]) => {
-    if (!batchedExitedEls.size) {
+    if (!isBatched) {
+      isBatched = true;
       requestAnimationFrame(() => {
         batchedExitedEls.size && finishExitEls(batchedExitedEls);
         batchedExitedEls.clear();
+        isBatched = false;
       });
     }
     for (const el of els) batchedExitedEls.add(el);
