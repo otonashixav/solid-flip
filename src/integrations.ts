@@ -44,11 +44,15 @@ function getAnimate<T extends unknown[], U extends Promise<unknown> | void>(
   if (typeof animate === "function") return animate;
   const { defaultKeyframes, configOptions } = config;
   const { keyframes = defaultKeyframes, options } = animate;
-  return (el, ...params) =>
-    el.animate(
+  const combinedOptions = { ...DEFAULT_OPTIONS, ...configOptions, ...options };
+  return (el, ...params) => {
+    const animation = el.animate(
       typeof keyframes === "function" ? keyframes(el, ...params) : keyframes,
-      { ...DEFAULT_OPTIONS, ...configOptions, ...options }
-    ).finished as U;
+      combinedOptions
+    );
+    combinedOptions.id && (animation.id = combinedOptions.id); // fix safari
+    return animation.finished as U;
+  };
 }
 
 export function animateMove(
