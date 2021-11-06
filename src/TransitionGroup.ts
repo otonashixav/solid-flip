@@ -12,7 +12,7 @@ import { EnterIntegration, ExitIntegration, MoveIntegration } from "./types";
 function resolvedToEls(resolved: JSX.Element) {
   return (Array.isArray(resolved) ? resolved : [resolved]).filter(
     (el) => el instanceof HTMLElement || el instanceof SVGElement
-  ) as (HTMLElement | SVGElement)[];
+  ) as Element[];
 }
 
 export interface TransitionGroupProps {
@@ -20,10 +20,10 @@ export interface TransitionGroupProps {
   enter?: EnterIntegration & { initial?: EnterIntegration };
   exit?: ExitIntegration | ExitIntegration;
   move?: MoveIntegration;
-  onEntering?: (els: (HTMLElement | SVGElement)[]) => void;
-  onEntered?: (els: (HTMLElement | SVGElement)[]) => void;
-  onExiting?: (els: (HTMLElement | SVGElement)[]) => void;
-  onExited?: (els: (HTMLElement | SVGElement)[]) => void;
+  onEntering?: (els: Element[]) => void;
+  onEntered?: (els: Element[]) => void;
+  onExiting?: (els: Element[]) => void;
+  onExited?: (els: Element[]) => void;
   initial?: boolean | EnterIntegration;
 }
 
@@ -48,11 +48,11 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
   createComputed(() => (onExited = props.onExited));
 
   const getResolved = children(() => props.children);
-  const [getEls, setEls] = createSignal<(HTMLElement | SVGElement)[]>([]);
+  const [getEls, setEls] = createSignal<Element[]>([]);
 
   let isBatched = false;
-  const batchedExitedEls: Set<HTMLElement | SVGElement> = new Set();
-  const batchExit = (els: (HTMLElement | SVGElement)[]) => {
+  const batchedExitedEls: Set<Element> = new Set();
+  const batchExit = (els: Element[]) => {
     if (!isBatched) {
       isBatched = true;
       requestAnimationFrame(() => {
@@ -64,9 +64,8 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
     for (const el of els) batchedExitedEls.add(el);
   };
 
-  const finishEnterEls = (els: (HTMLElement | SVGElement)[]) =>
-    onEntered && onEntered(els);
-  const finishExitEls = (removedEls: Set<HTMLElement | SVGElement>) => {
+  const finishEnterEls = (els: Element[]) => onEntered && onEntered(els);
+  const finishExitEls = (removedEls: Set<Element>) => {
     onExited && onExited([...removedEls]);
     createRoot((dispose) => {
       const els = untrack(getEls).filter((el) => !removedEls.has(el));
@@ -77,7 +76,7 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
   };
 
   let isInitial = true;
-  createComputed((prevElSet: Set<HTMLElement | SVGElement>) => {
+  createComputed((prevElSet: Set<Element>) => {
     const resolved = getResolved();
     const els = resolvedToEls(resolved);
     const elSet = new Set(els);

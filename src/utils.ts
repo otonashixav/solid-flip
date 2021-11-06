@@ -1,9 +1,7 @@
 import { onMount } from "solid-js";
 import { MovedElement } from "./types";
 
-export function filterMovedEls(
-  els: (HTMLElement | SVGElement)[]
-): MovedElement[] {
+export function filterMovedEls(els: Element[]): MovedElement[] {
   const movableEls: MovedElement[] = [];
   for (const el of els) {
     if (el.isConnected) {
@@ -27,7 +25,7 @@ export function filterMovedEls(
   return movedEls;
 }
 
-export function undetachEls(els: (HTMLElement | SVGElement)[]): void {
+export function undetachEls(els: Element[]): void {
   for (const el of els) {
     const animations = el.getAnimations();
     for (const animation of animations) {
@@ -36,9 +34,9 @@ export function undetachEls(els: (HTMLElement | SVGElement)[]): void {
   }
 }
 
-export function detachEls(els: (HTMLElement | SVGElement)[]): void {
+export function detachEls(els: Element[]): void {
   const detachableEls: [
-    el: HTMLElement | SVGElement,
+    el: Element,
     left: string,
     top: string,
     width: string,
