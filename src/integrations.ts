@@ -17,7 +17,7 @@ const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
 };
 
 const DEFAULT_MOVE_KEYFRAMES = (
-  _el: Element,
+  _el: HTMLElement | SVGElement,
   x: number,
   y: number
 ): KeyframeType => ({
@@ -27,20 +27,20 @@ const DEFAULT_MOVE_KEYFRAMES = (
 
 function getAnimate<T extends unknown[], U extends Promise<unknown> | void>(
   animate:
-    | ((el: Element, ...params: T) => U)
+    | ((el: HTMLElement | SVGElement, ...params: T) => U)
     | {
         keyframes?:
           | KeyframeType
-          | ((el: Element, ...params: T) => KeyframeType);
+          | ((el: HTMLElement | SVGElement, ...params: T) => KeyframeType);
         options?: KeyframeAnimationOptions;
       },
   config: {
     defaultKeyframes:
       | ([] extends T ? KeyframeType : never)
-      | ((el: Element, ...params: T) => KeyframeType);
+      | ((el: HTMLElement | SVGElement, ...params: T) => KeyframeType);
     configOptions?: KeyframeAnimationOptions;
   }
-): (el: Element, ...params: T) => U {
+): (el: HTMLElement | SVGElement, ...params: T) => U {
   if (typeof animate === "function") return animate;
   const { defaultKeyframes, configOptions } = config;
   const { keyframes = defaultKeyframes, options } = animate;
@@ -54,10 +54,14 @@ function getAnimate<T extends unknown[], U extends Promise<unknown> | void>(
 export function animateMove(
   animate:
     | {
-        keyframes?: (el: Element, x: number, y: number) => KeyframeType;
+        keyframes?: (
+          el: HTMLElement | SVGElement,
+          x: number,
+          y: number
+        ) => KeyframeType;
         options?: KeyframeAnimationOptions;
       }
-    | ((el: Element, x: number, y: number) => void) = {}
+    | ((el: HTMLElement | SVGElement, x: number, y: number) => void) = {}
 ): MoveIntegration {
   const animateEl = getAnimate(animate, {
     defaultKeyframes: DEFAULT_MOVE_KEYFRAMES,
@@ -72,17 +76,20 @@ export function animateMove(
   };
 }
 
-const DEFAULT_ENTER_KEYFRAMES: (el: Element) => KeyframeType = (el) => ({
-  opacity: ["0", getComputedStyle(el).opacity],
-});
+const DEFAULT_ENTER_KEYFRAMES: (el: HTMLElement | SVGElement) => KeyframeType =
+  (el) => ({
+    opacity: ["0", getComputedStyle(el).opacity],
+  });
 
 export function animateEnter(
   animate:
     | {
-        keyframes?: KeyframeType | ((el: Element) => KeyframeType);
+        keyframes?:
+          | KeyframeType
+          | ((el: HTMLElement | SVGElement) => KeyframeType);
         options?: KeyframeAnimationOptions;
       }
-    | ((el: Element) => Promise<unknown>) = {},
+    | ((el: HTMLElement | SVGElement) => Promise<unknown>) = {},
   options: {
     unabsolute?: boolean;
     reverseExit?: boolean;
@@ -116,17 +123,21 @@ export function animateEnter(
   };
 }
 
-const DEFAULT_EXIT_KEYFRAMES: (el: Element) => KeyframeType = (el) => ({
+const DEFAULT_EXIT_KEYFRAMES: (el: HTMLElement | SVGElement) => KeyframeType = (
+  el
+) => ({
   opacity: [getComputedStyle(el).opacity, "0"],
 });
 
 export function animateExit(
   animate:
     | {
-        keyframes?: KeyframeType | ((el: Element) => KeyframeType);
+        keyframes?:
+          | KeyframeType
+          | ((el: HTMLElement | SVGElement) => KeyframeType);
         options?: KeyframeAnimationOptions;
       }
-    | ((el: Element) => Promise<unknown>) = {},
+    | ((el: HTMLElement | SVGElement) => Promise<unknown>) = {},
   options: {
     absolute?: boolean;
     reverseEnter?: boolean;
@@ -157,11 +168,14 @@ export function animateExit(
   };
 }
 
-function addClasses(els: Element[], ...classes: string[]) {
+function addClasses(els: (HTMLElement | SVGElement)[], ...classes: string[]) {
   for (const el of els) el.classList.add(...classes);
 }
 
-function removeClasses(els: Element[], ...classes: string[]) {
+function removeClasses(
+  els: (HTMLElement | SVGElement)[],
+  ...classes: string[]
+) {
   for (const el of els) el.classList.remove(...classes);
 }
 
@@ -196,7 +210,10 @@ function cssIntegration(
   options: {
     type?: "animationend" | "transitionend" | "both";
   }
-): (els: Element[], finish?: (el: Element[]) => void) => void {
+): (
+  els: (HTMLElement | SVGElement)[],
+  finish?: (el: (HTMLElement | SVGElement)[]) => void
+) => void {
   const { fromClasses, activeClasses, toClasses } = classLists;
   const { type = "both" } = options;
   return (els, finish) => {
@@ -206,7 +223,7 @@ function cssIntegration(
       requestAnimationFrame(() => {
         removeClasses(els, ...fromClasses);
         addClasses(els, ...toClasses);
-        const registerEventHandler = (el: Element) => {
+        const registerEventHandler = (el: HTMLElement | SVGElement) => {
           const handleEvent = ({ target, type }: Event) => {
             if (target !== el) return;
             el.removeEventListener(CANCEL_EVENT_TYPE, handleEvent);
