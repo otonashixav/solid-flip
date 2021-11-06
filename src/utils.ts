@@ -35,13 +35,6 @@ export function undetachEls(els: Element[]): void {
 }
 
 export function detachEls(els: Element[]): void {
-  const detachableEls: [
-    el: Element,
-    left: string,
-    top: string,
-    width: string,
-    height: string
-  ][] = [];
   let parentX: number | undefined, parentY: number | undefined;
   const animations = [];
   for (const el of els) {
