@@ -4,6 +4,7 @@ import {
   untrack,
   JSX,
   createComputed,
+  createEffect,
   Component,
   createRoot,
 } from "solid-js";
@@ -38,14 +39,14 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
     onExiting,
     onExited,
   } = {} as TransitionGroupProps;
-  createComputed(() => (initial = props.initial));
-  createComputed(() => (move = props.move));
-  createComputed(() => (enter = props.enter));
-  createComputed(() => (exit = props.exit));
-  createComputed(() => (onEntering = props.onEntering));
-  createComputed(() => (onEntered = props.onEntered));
-  createComputed(() => (onExiting = props.onExiting));
-  createComputed(() => (onExited = props.onExited));
+  createEffect(() => (initial = props.initial));
+  createEffect(() => (move = props.move));
+  createEffect(() => (enter = props.enter));
+  createEffect(() => (exit = props.exit));
+  createEffect(() => (onEntering = props.onEntering));
+  createEffect(() => (onEntered = props.onEntered));
+  createEffect(() => (onExiting = props.onExiting));
+  createEffect(() => (onExited = props.onExited));
 
   const getResolved = children(() => props.children);
   const [getEls, setEls] = createSignal<Element[]>([]);
@@ -76,9 +77,15 @@ export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
   };
 
   let isInitial = true;
-  createComputed((prevElSet: Set<Element>) => {
+  const [getFilteredEls, setFilteredEls] = createSignal<Element[]>([]);
+  createEffect(() => {
+    // update els in an effect to suspend in suspense
     const resolved = getResolved();
     const els = resolvedToEls(resolved);
+    setFilteredEls(els);
+  });
+  createComputed((prevElSet: Set<Element>) => {
+    const els = getFilteredEls();
     const elSet = new Set(els);
 
     if (isInitial) {
