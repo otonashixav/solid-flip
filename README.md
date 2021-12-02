@@ -209,6 +209,10 @@ Any callbacks run in an `onMount` will run after entering elements have been mou
 
 ## Changelog
 
+### 0.10.3
+
+- Fix interaction with suspense [#6](https://github.com/otonashixav/solid-flip/issues/6).
+
 ### 0.10.2
 
 - Improve detach by making it not set styles on the element.
