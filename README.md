@@ -18,7 +18,7 @@ pnpm i @otonashixav/solid-flip
 
 ## Basic Usage
 
-[Playground Link](https://playground.solidjs.com/?hash=-1273046538&version=1.2.2)
+[Playground Link](https://playground.solidjs.com/?hash=1496144121&version=1.2.6)
 
 ```tsx
 <TransitionGroup
@@ -209,6 +209,10 @@ Any callbacks run in an `onMount` will run after entering elements have been mou
 
 ## Changelog
 
+### 0.10.4
+
+- Use `createRenderEffect` instead of `createEffect` in fix in 0.10.3, so that the initial render isn't empty.
+- 
 ### 0.10.3
 
 - Fix interaction with suspense [#6](https://github.com/otonashixav/solid-flip/issues/6).
