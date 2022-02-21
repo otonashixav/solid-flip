@@ -1,6 +1,6 @@
 {
   "name": "@otonashixav/solid-flip",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "description": "A lightweight FLIP library for solid-js",
   "sideEffects": false,
   "type": "module",
