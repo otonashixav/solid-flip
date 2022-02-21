@@ -209,10 +209,14 @@ Any callbacks run in an `onMount` will run after entering elements have been mou
 
 ## Changelog
 
+### 0.10.5
+
+- Fix SSR.
+
 ### 0.10.4
 
 - Use `createRenderEffect` instead of `createEffect` in fix in 0.10.3, so that the initial render isn't empty.
-- 
+
 ### 0.10.3
 
 - Fix interaction with suspense [#6](https://github.com/otonashixav/solid-flip/issues/6).
