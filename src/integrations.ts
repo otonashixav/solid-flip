@@ -8,7 +8,6 @@ import {
 import { detachEls, filterMovedEls, undetachEls } from "./utils";
 
 const CANCEL_EVENT_TYPE = "flipcancel";
-const CANCEL_EVENT = Object.freeze(new CustomEvent(CANCEL_EVENT_TYPE));
 
 const DEFAULT_OPTIONS: KeyframeAnimationOptions = {
   duration: 300,
@@ -110,7 +109,7 @@ export function animateEnter(
           }
         }
         let cancelled = false;
-        el.dispatchEvent(CANCEL_EVENT);
+        el.dispatchEvent(new CustomEvent(CANCEL_EVENT_TYPE));
         if (finish) {
           el.addEventListener?.(CANCEL_EVENT_TYPE, () => (cancelled = true));
           animateEl(el).then(() => cancelled || finish([el]));
@@ -154,7 +153,7 @@ export function animateExit(
         }
       }
       let cancelled = false;
-      el.dispatchEvent(CANCEL_EVENT);
+      el.dispatchEvent(new CustomEvent(CANCEL_EVENT_TYPE));
       el.addEventListener?.(CANCEL_EVENT_TYPE, () => (cancelled = true));
       animateEl(el).then(() => cancelled || finish([el]));
     }
@@ -204,7 +203,7 @@ function cssIntegration(
   const { fromClasses, activeClasses, toClasses } = classLists;
   const { type = "both" } = options;
   return (els, finish) => {
-    for (const el of els) el.dispatchEvent(CANCEL_EVENT);
+    for (const el of els) el.dispatchEvent(new CustomEvent(CANCEL_EVENT_TYPE));
     addClasses(els, ...fromClasses, ...activeClasses);
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {

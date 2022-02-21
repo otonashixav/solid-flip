@@ -8,6 +8,7 @@ import {
   Component,
   createRoot,
 } from "solid-js";
+import { isServer } from "solid-js/web";
 import { EnterIntegration, ExitIntegration, MoveIntegration } from "./types";
 
 function resolvedToEls(resolved: JSX.Element) {
@@ -29,6 +30,7 @@ export interface TransitionGroupProps {
 }
 
 export const TransitionGroup: Component<TransitionGroupProps> = (props) => {
+  if (isServer) return props.children;
   let {
     move,
     enter,
